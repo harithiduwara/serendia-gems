@@ -1,5 +1,7 @@
 # Serendia Gems — SerendiaGems.com
 
+[![CI](https://github.com/harithiduwara/serendia-gems/actions/workflows/ci.yml/badge.svg)](https://github.com/harithiduwara/serendia-gems/actions/workflows/ci.yml)
+
 An enterprise storefront for a Ceylon (Sri Lankan) sapphire house. 24 individually
 photographed and specified loose sapphires, faceted discovery, per-stone detail pages,
 and an enquiry-to-purchase funnel.
@@ -93,6 +95,38 @@ stay light **in both themes**. See `docs/03-design-system.md` §1.
 `docs/05-deployment-runbook.md` §1 lists six go-live blockers. The most important:
 **contact details in `src/lib/site.ts` are placeholders** and would send real customers
 to a number that does not exist.
+
+## Deploying
+
+The app needs a Node runtime — `/api/enquiry` and `next/image` optimisation are
+server-side. **GitHub Pages will not work**: static export disables the enquiry endpoint
+and forces unoptimised images (500 KB JPEGs instead of 47 KB AVIF).
+
+Vercel is the natural target. Import this repository at
+[vercel.com/new](https://vercel.com/new) — the framework, build command and output
+directory are all detected automatically. Set one environment variable:
+
+```
+NEXT_PUBLIC_SITE_URL = https://serendiagems.com     # no trailing slash
+```
+
+It drives canonical URLs, the sitemap and Open Graph tags, so a wrong value causes real
+SEO damage. Every push to `main` then redeploys automatically.
+
+After the first deploy, verify against the live origin:
+
+```bash
+SMOKE_BASE_URL=https://your-deployment-url npm run smoke
+```
+
+All 52 checks must pass before pointing the domain at it. Full DNS, TLS and post-launch
+steps are in [`docs/05-deployment-runbook.md`](docs/05-deployment-runbook.md).
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and pull request to `main`: lint,
+typecheck, the 66 unit tests, a production build, and the 52-check smoke suite against
+the built artefact.
 
 ## Stack
 
