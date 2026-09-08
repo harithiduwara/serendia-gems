@@ -130,7 +130,7 @@ const run = async () => {
       locs.length > 0 && locs.every((l) => l.startsWith(BASE)),
       `${locs.filter((l) => !l.startsWith(BASE)).length} of ${locs.length} wrong`);
     // Prove they are real, not just well-formed.
-    const sample = locs.find((l) => l.includes('/gem/'));
+    const sample = locs.find((l) => l.includes('/gem/') && l.startsWith(BASE));
     if (sample) {
       const r = await fetch(sample);
       check('a sitemap lot URL resolves', r.ok, `${sample} → HTTP ${r.status}`);

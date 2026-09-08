@@ -33,7 +33,12 @@ jobs:
         run: npm test
 
       - name: Production build
+        # Build with a site URL matching where the smoke suite serves it, so
+        # canonical/og/sitemap URLs are self-consistent and the smoke suite's
+        # "points at this deployment" checks are meaningful here too.
         run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
       # 52 HTTP checks against the built artefact: routes, structured data,
       # security headers, the enquiry API and its rate limiting.
