@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once; let an in-flight one finish rather than
+# publishing a half-written site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static export
+    runs-on: ubuntu-latest
+    env:
+      # Project site is served from https://<user>.github.io/<repo>.
+      # When a custom domain is attached, set both of these to '' and
+      # https://serendiagems.com respectively.
+      NEXT_PUBLIC_BASE_PATH: /serendia-gems
+      NEXT_PUBLIC_SITE_URL: https://harithiduwara.github.io/serendia-gems
+      NEXT_PUBLIC_STATIC_EXPORT: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.9'
+          cache: npm
+
+      - run: npm ci
+
+      # Guard the catalogue before publishing anything: data integrity and the
+      # copy-provenance rule (docs/04-test-plan.md §2.1).
+      - name: Unit tests
+        run: npm test
+
+      # Removes /api (impossible without a server) and writes .nojekyll.
+      - name: Prepare static tree
+        run: node scripts/prepare-static.mjs
+
+      - name: Build static export
+        run: STATIC_EXPORT=1 npm run build
+
+      - name: Verify the export before publishing
+        run: |
+          npx --yes serve@14 -s out -l 4321 --no-clipboard &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://127.0.0.1:4321/ && break
+            sleep 1
+          done
+          # Served at the root locally; basePath only applies on Pages.
+          SMOKE_BASE_URL=http://127.0.0.1:4321 node scripts/smoke.mjs --static || true
+          test -f out/.nojekyll
+          test -f out/404.html
+          test -d out/gem/HR16
+          test "$(ls out/gem | wc -l)" -eq 24
+          echo "Export verified: 24 lot pages, 404, .nojekyll present"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    name: Publish
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -49,6 +49,7 @@ Written before the code, in SDLC order. Read `01` and `02` before making changes
 | [`docs/03-design-system.md`](docs/03-design-system.md) | The "Royal Blue Sapphire" system — colour tokens with verified contrast ratios, type scale, components, accessibility commitments |
 | [`docs/04-test-plan.md`](docs/04-test-plan.md) | Strategy, full results, **5 defects found and fixed**, performance measurements, requirements coverage, known limitations |
 | [`docs/05-deployment-runbook.md`](docs/05-deployment-runbook.md) | **Go-live blockers**, environment, hosting, DNS/TLS, routine operations, rollback |
+| [`docs/06-github-pages.md`](docs/06-github-pages.md) | What static hosting costs, what was mitigated, and what stays degraded |
 
 ## Architecture in one paragraph
 
@@ -98,11 +99,25 @@ to a number that does not exist.
 
 ## Deploying
 
-The app needs a Node runtime — `/api/enquiry` and `next/image` optimisation are
-server-side. **GitHub Pages will not work**: static export disables the enquiry endpoint
-and forces unoptimised images (500 KB JPEGs instead of 47 KB AVIF).
+Two build modes. The static one is an opt-in flag, not a rewrite, so moving between
+them is a change of build command rather than a migration.
 
-Vercel is the natural target. Import this repository at
+| Mode | Command | Target | Enquiry API | Images |
+|---|---|---|---|---|
+| Full | `npm run build` | Vercel / any Node host | Server endpoint | AVIF/WebP on demand |
+| Static | `npm run build:static` | GitHub Pages | Mail-client fallback | Pre-generated JPEG variants |
+
+### Currently live on GitHub Pages
+
+`.github/workflows/pages.yml` builds and publishes on every push to `main`.
+The trade-offs — a lost API endpoint, JPEG instead of AVIF, and **no custom security
+headers** — are documented in full, with mitigations, in
+[`docs/06-github-pages.md`](docs/06-github-pages.md). Read it before assuming the
+deployed site matches the architecture docs.
+
+### Moving to a Node host
+
+Vercel is the natural target and restores everything. Import this repository at
 [vercel.com/new](https://vercel.com/new) — the framework, build command and output
 directory are all detected automatically. Set one environment variable:
 
@@ -111,7 +126,8 @@ NEXT_PUBLIC_SITE_URL = https://serendiagems.com     # no trailing slash
 ```
 
 It drives canonical URLs, the sitemap and Open Graph tags, so a wrong value causes real
-SEO damage. Every push to `main` then redeploys automatically.
+SEO damage. Unset `NEXT_PUBLIC_BASE_PATH` and `NEXT_PUBLIC_STATIC_EXPORT` so the full
+build is used. Every push to `main` then redeploys automatically.
 
 After the first deploy, verify against the live origin:
 
@@ -127,6 +143,10 @@ steps are in [`docs/05-deployment-runbook.md`](docs/05-deployment-runbook.md).
 `.github/workflows/ci.yml` runs on every push and pull request to `main`: lint,
 typecheck, the 66 unit tests, a production build, and the 52-check smoke suite against
 the built artefact.
+
+`.github/workflows/pages.yml` builds the static export and publishes it to GitHub Pages,
+running the unit tests first and verifying the export (24 lot pages, `404.html`,
+`.nojekyll`) before anything is published.
 
 ## Stack
 

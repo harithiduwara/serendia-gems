@@ -4,7 +4,16 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button, Field, inputClass } from '@/components/primitives';
 import { useWishlist } from '@/components/wishlist/WishlistProvider';
-import type { EnquiryResponse } from '@/lib/validation';
+import { SITE } from '@/lib/site';
+import { enquirySchema, type EnquiryResponse } from '@/lib/validation';
+
+/**
+ * The static export (GitHub Pages) has no server, so there is no /api/enquiry to
+ * POST to. Rather than let the form fail silently — the worst possible outcome
+ * for the one conversion path on the site — it validates with the same schema
+ * and hands off to the visitor's mail client with everything pre-filled.
+ */
+const IS_STATIC = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -45,6 +54,42 @@ export function EnquiryForm() {
       gemCodes: subjectCodes,
     };
 
+    // Static build: validate locally, then hand off to the mail client.
+    if (IS_STATIC) {
+      const parsed = enquirySchema.safeParse(payload);
+      if (!parsed.success) {
+        const fieldErrors: Record<string, string> = {};
+        for (const issue of parsed.error.issues) {
+          const key = issue.path[0];
+          if (typeof key === 'string' && !fieldErrors[key]) fieldErrors[key] = issue.message;
+        }
+        setErrors(fieldErrors);
+        setFormError('Please check the highlighted fields.');
+        setStatus('error');
+        return;
+      }
+
+      const lines = [
+        `Name: ${payload.name}`,
+        `Email: ${payload.email}`,
+        payload.phone ? `Phone: ${payload.phone}` : null,
+        payload.country ? `Country: ${payload.country}` : null,
+        subjectCodes.length ? `Lots: ${subjectCodes.join(', ')}` : null,
+        '',
+        payload.message,
+      ].filter((l): l is string => l !== null);
+
+      const subject = subjectCodes.length
+        ? `Enquiry — lot ${subjectCodes.join(', ')}`
+        : 'Enquiry from serendiagems.com';
+
+      window.location.href =
+        `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(lines.join('\n'))}`;
+      setStatus('sent');
+      return;
+    }
+
     try {
       const res = await fetch('/api/enquiry', {
         method: 'POST',
@@ -75,11 +120,27 @@ export function EnquiryForm() {
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-4 text-positive" aria-hidden="true">
           <circle cx="12" cy="12" r="10" /><path d="m8.5 12.5 2.5 2.5 4.5-5" />
         </svg>
-        <h2 className="t-title mb-2">Your enquiry is with us</h2>
+        <h2 className="t-title mb-2">
+          {IS_STATIC ? 'Your email is ready to send' : 'Your enquiry is with us'}
+        </h2>
         <p className="measure mx-auto text-[0.9375rem] leading-relaxed text-[color:var(--muted-fg)]">
-          We reply to every enquiry personally, usually within one working day. If you asked about
-          a specific lot we will send further images and video with the reply.
+          {IS_STATIC
+            ? 'We have opened your mail application with the details filled in. Press send there and it reaches us — we reply personally, usually within one working day.'
+            : 'We reply to every enquiry personally, usually within one working day. If you asked about a specific lot we will send further images and video with the reply.'}
         </p>
+        {IS_STATIC ? (
+          <p className="mt-4 text-[0.8125rem] text-[color:var(--subtle-fg)]">
+            Nothing happened? Write to{' '}
+            <a href={`mailto:${SITE.email}`} className="link-underline font-medium">
+              {SITE.email}
+            </a>{' '}
+            or message us on{' '}
+            <a href={`https://wa.me/${SITE.whatsapp}`} rel="noopener noreferrer" className="link-underline font-medium">
+              WhatsApp
+            </a>
+            .
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -153,7 +214,7 @@ export function EnquiryForm() {
 
       <div className="flex flex-wrap items-center gap-4 pt-1">
         <Button type="submit" size="lg" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending…' : 'Send enquiry'}
+          {status === 'sending' ? 'Sending…' : IS_STATIC ? 'Compose enquiry email' : 'Send enquiry'}
         </Button>
         <p className="text-xs text-[color:var(--subtle-fg)]">
           We use your details only to answer this enquiry. No mailing list, no third parties.

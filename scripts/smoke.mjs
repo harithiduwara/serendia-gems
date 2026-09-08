@@ -9,7 +9,23 @@
  *
  * Exits non-zero on the first hard failure, so it can gate a deploy.
  */
-const BASE = process.env.SMOKE_BASE_URL ?? 'http://localhost:3000';
+const BASE = (process.env.SMOKE_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+
+/**
+ * `--static` verifies a GitHub Pages export. Two families of check are dropped
+ * because a static host genuinely cannot satisfy them, not because they are
+ * inconvenient: the enquiry API (no server) and custom security headers
+ * (GitHub Pages sets its own). Both are recorded as accepted trade-offs in
+ * docs/06-github-pages.md.
+ */
+const STATIC = process.argv.includes('--static');
+
+// Static export uses trailingSlash, so /collection is served at /collection/.
+const p = (path) => {
+  if (!STATIC || path === '/') return path;
+  if (/\.(xml|txt|html)$/.test(path)) return path;
+  return path.endsWith('/') ? path : `${path}/`;
+};
 
 let passed = 0;
 const failures = [];
@@ -20,7 +36,7 @@ const check = (name, condition, detail = '') => {
 };
 
 const get = async (path) => {
-  const res = await fetch(`${BASE}${path}`, { redirect: 'manual' });
+  const res = await fetch(`${BASE}${p(path)}`, { redirect: 'follow' });
   return { res, body: await res.text() };
 };
 
@@ -115,7 +131,9 @@ const run = async () => {
 
   // ── Security headers ─────────────────────────────────────────────────────
   console.log('\nSecurity headers');
-  {
+  if (STATIC) {
+    console.log('  \x1b[33m–\x1b[0m skipped: GitHub Pages sets its own headers (see docs/06-github-pages.md)');
+  } else {
     const { res } = await get('/');
     for (const [h, expected] of [
       ['x-content-type-options', 'nosniff'],
@@ -129,7 +147,29 @@ const run = async () => {
   }
 
   // ── Enquiry endpoint ─────────────────────────────────────────────────────
-  console.log('\nEnquiry API');
+  console.log(STATIC ? '\nEnquiry (static fallback)' : '\nEnquiry API');
+  if (STATIC) {
+    const { body } = await get('/contact');
+    // These are real anchors in the HTML — they work with JavaScript disabled.
+    check('contact page exposes a direct mailto', body.includes('mailto:'));
+    check('contact page exposes WhatsApp', body.includes('wa.me'));
+
+    // The form itself sits behind a Suspense boundary and hydrates client-side,
+    // so its copy is in the route chunk rather than the HTML. Fetch the chunks
+    // the page references and assert the mail-client fallback actually shipped —
+    // a broken enquiry path is the worst failure this site could have.
+    const scripts = [...body.matchAll(/src="([^"]*\/_next\/static\/chunks\/[^"]*\.js)"/g)].map((m) => m[1]);
+    let found = false;
+    for (const src of scripts) {
+      const url = src.startsWith('http') ? src : `${BASE.replace(/\/[^/]*$/, '')}${src}`;
+      try {
+        const r = await fetch(src.startsWith('http') ? src : new URL(src, BASE + '/').toString());
+        if (r.ok && (await r.text()).includes('Compose enquiry email')) { found = true; break; }
+      } catch { /* try the next chunk */ }
+      void url;
+    }
+    check('enquiry form ships the mail-client fallback', found, `checked ${scripts.length} chunks`);
+  } else {
   const post = (payload) =>
     fetch(`${BASE}/api/enquiry`, {
       method: 'POST',
@@ -173,13 +213,23 @@ const run = async () => {
     const res = await fetch(`${BASE}/api/enquiry`);
     check('GET on the enquiry endpoint → 405', res.status === 405, `got ${res.status}`);
   }
+  }
 
   // ── 404 ──────────────────────────────────────────────────────────────────
   console.log('\nError handling');
   {
     const { res, body } = await get('/gem/DOES-NOT-EXIST');
-    check('unknown lot → 404', res.status === 404, `got ${res.status}`);
-    check('404 page is branded, not a stack trace', body.includes('not in the collection'));
+    if (STATIC) {
+      check('unknown lot → 404', res.status === 404, `got ${res.status}`);
+      // GitHub Pages serves out/404.html for unknown paths. A bare local static
+      // server serves its own page instead, so assert the artefact directly.
+      const r = await fetch(`${BASE}/404.html`);
+      const page404 = r.ok ? await r.text() : '';
+      check('404.html is the branded page, not a stack trace', page404.includes('not in the collection'));
+    } else {
+      check('unknown lot → 404', res.status === 404, `got ${res.status}`);
+      check('404 page is branded, not a stack trace', body.includes('not in the collection'));
+    }
   }
 
   // ── Report ───────────────────────────────────────────────────────────────

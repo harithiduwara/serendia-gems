@@ -2,6 +2,12 @@ import type { MetadataRoute } from 'next';
 import { getAllGems } from '@/lib/catalog';
 import { GUIDE_PAGES, SITE } from '@/lib/site';
 
+/**
+ * Content depends only on the compiled catalogue, never on the request, so this
+ * is safe to emit at build time. Required explicitly for `output: 'export'`.
+ */
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const url = (p: string) => new URL(p, SITE.url).toString();
