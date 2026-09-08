@@ -20,6 +20,18 @@ const BASE = (process.env.SMOKE_BASE_URL ?? 'http://localhost:3000').replace(/\/
  */
 const STATIC = process.argv.includes('--static');
 
+/**
+ * The origin the build was CONFIGURED with, which is not always where it is
+ * being served from. A pre-publish check builds for the production origin but
+ * serves it on localhost, so absolute URLs must be compared against the
+ * configured origin — while the fetches that prove those URLs resolve have to
+ * go to the local one. Defaults to the serving origin, which is the common case.
+ */
+const SITE = (process.env.SMOKE_SITE_URL ?? BASE).replace(/\/$/, '');
+
+/** Rewrites a configured-origin URL to the origin actually being served. */
+const toServed = (url) => (url.startsWith(SITE) ? BASE + url.slice(SITE.length) : url);
+
 // Static export uses trailingSlash, so /collection is served at /collection/.
 const p = (path) => {
   if (!STATIC || path === '/') return path;
@@ -110,29 +122,29 @@ const run = async () => {
     // canonical, og:url and og:image at a 404. Assert the emitted absolute
     // URLs actually live under the origin being tested.
     const canonical = body.match(/rel="canonical" href="([^"]+)"/)?.[1] ?? '';
-    check('canonical points at this deployment', canonical.startsWith(BASE), `got ${canonical || '(none)'}`);
+    check('canonical points at the configured site origin', canonical.startsWith(SITE), `got ${canonical || '(none)'}`);
     check('canonical names the right lot', /\/gem\/HR16\/?$/.test(canonical), `got ${canonical}`);
 
     const ogUrl = body.match(/property="og:url" content="([^"]+)"/)?.[1] ?? '';
-    check('og:url points at this deployment', ogUrl.startsWith(BASE), `got ${ogUrl || '(none)'}`);
+    check('og:url points at the configured site origin', ogUrl.startsWith(SITE), `got ${ogUrl || '(none)'}`);
 
     const ogImg = body.match(/property="og:image" content="([^"]+)"/)?.[1] ?? '';
-    check('og:image points at this deployment', ogImg.startsWith(BASE), `got ${ogImg || '(none)'}`);
-    if (ogImg.startsWith(BASE)) {
-      const r = await fetch(ogImg);
+    check('og:image points at the configured site origin', ogImg.startsWith(SITE), `got ${ogImg || '(none)'}`);
+    if (ogImg.startsWith(SITE)) {
+      const r = await fetch(toServed(ogImg));
       check('og:image actually resolves', r.ok, `HTTP ${r.status}`);
     }
   }
   {
     const { body } = await get('/sitemap.xml');
     const locs = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-    check('every sitemap URL points at this deployment',
-      locs.length > 0 && locs.every((l) => l.startsWith(BASE)),
-      `${locs.filter((l) => !l.startsWith(BASE)).length} of ${locs.length} wrong`);
-    // Prove they are real, not just well-formed.
-    const sample = locs.find((l) => l.includes('/gem/') && l.startsWith(BASE));
+    check('every sitemap URL points at the configured site origin',
+      locs.length > 0 && locs.every((l) => l.startsWith(SITE)),
+      `${locs.filter((l) => !l.startsWith(SITE)).length} of ${locs.length} wrong`);
+    // Prove they are real, not merely well-formed.
+    const sample = locs.find((l) => l.includes('/gem/') && l.startsWith(SITE));
     if (sample) {
-      const r = await fetch(sample);
+      const r = await fetch(toServed(sample));
       check('a sitemap lot URL resolves', r.ok, `${sample} → HTTP ${r.status}`);
     }
   }

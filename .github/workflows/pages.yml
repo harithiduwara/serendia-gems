@@ -51,18 +51,25 @@ jobs:
 
       - name: Verify the export before publishing
         run: |
+          # Serve the export under the same basePath GitHub Pages will use, so
+          # asset URLs resolve exactly as they will in production.
+          mkdir -p .pages-root
+          cp -r out .pages-root/serendia-gems
           # NOT `serve -s`: that is SPA mode and rewrites every path to
           # index.html, which silently turns each route check into a false pass.
-          # A plain static file server matches how Pages actually resolves
-          # directory-style URLs.
-          python3 -m http.server 4321 --bind 127.0.0.1 --directory out &
+          # A plain static file server matches how Pages resolves directory URLs.
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory .pages-root &
           for i in $(seq 1 30); do
-            curl -sf -o /dev/null http://127.0.0.1:4321/ && break
+            curl -sf -o /dev/null http://127.0.0.1:4321/serendia-gems/ && break
             sleep 1
           done
-          # Served at the root locally; basePath only applies on Pages.
+          # SMOKE_SITE_URL is the origin the build was configured for; the
+          # absolute URLs it emits are checked against that, while the fetches
+          # proving they resolve go to the local server.
           # No `|| true` — a failing check must fail the deploy.
-          SMOKE_BASE_URL=http://127.0.0.1:4321 node scripts/smoke.mjs --static
+          SMOKE_BASE_URL=http://127.0.0.1:4321/serendia-gems \
+          SMOKE_SITE_URL=https://harithiduwara.github.io/serendia-gems \
+            node scripts/smoke.mjs --static
           test -f out/.nojekyll
           test -f out/404.html
           test -d out/gem/HR16
