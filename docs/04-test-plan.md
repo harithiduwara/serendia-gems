@@ -10,7 +10,7 @@ Three layers, each chosen for what it can prove that the others cannot.
 
 | Layer | Tool | Proves | Count |
 |---|---|---|---|
-| Unit / data integrity | Vitest | Pure logic is correct; the catalogue is internally consistent and its copy obeys the provenance rule | 66 |
+| Unit / data integrity | Vitest | Pure logic is correct; the catalogue is internally consistent and its copy obeys the provenance rule | 79 |
 | Integration (HTTP) | Node smoke harness | The **built artefact** serves correct status codes, content, structured data, and headers over the wire | 52 |
 | Manual / exploratory | Browser, DOM inspection | Rendering, responsive behaviour, real interaction, accessibility semantics | 14 |
 
@@ -18,10 +18,12 @@ Three layers, each chosen for what it can prove that the others cannot.
 
 ## 2. Automated results
 
-### 2.1 Unit — 66 passed, 0 failed
+### 2.1 Unit — 79 passed, 0 failed
 
 ```
 ✓ tests/format.test.ts     (5)
+✓ tests/ui.test.ts         (6)
+✓ tests/seo.test.ts        (7)
 ✓ tests/validation.test.ts (13)
 ✓ tests/inventory.test.ts  (17)
 ✓ tests/catalog.test.ts    (31)
@@ -144,3 +146,56 @@ npm run verify      # typecheck + 66 unit tests + production build
 npm start &         # then
 npm run smoke       # 52 HTTP checks against the built artefact
 ```
+
+---
+
+## 9. Usability pass — findings and results
+
+An HCI audit against Nielsen's heuristics, Fitts's law and WCAG 2.2, followed by
+remediation. Patterns and rationale are in `docs/03-design-system.md` §9.
+
+### 9.1 Findings
+
+| # | Finding | Principle | Status |
+|---|---|---|---|
+| U-01 | Active filters invisible unless the panel was open; no way to remove one individually | Nielsen #6, #3 | Fixed — removable chips |
+| U-02 | No feedback between clicking a stone and the page arriving | Nielsen #1, Doherty | Fixed — delayed progress bar |
+| U-03 | No way to compare stones, though the copy told buyers to | Decision support | Fixed — `/compare` + selection bar |
+| U-04 | No visible route back to a filtered result set | Nielsen #3 | Fixed — "Back to your filtered results" |
+| U-05 | Form validated only on submit; 4,000-char cap invisible | Nielsen #5 | Fixed — blur validation + counter |
+| U-06 | Mobile: the single conversion action scrolled out of reach | Fitts's law | Fixed — sticky action bar *(see §9.3)* |
+| U-07 | Saving a stone gave no confirmation | Nielsen #1 | Fixed — toast with Undo |
+| U-08 | 15 interactive targets under 24×24 px | WCAG 2.2 SC 2.5.8 | Fixed — `min-h-6` on link targets |
+
+### 9.2 Defects found while building the fixes
+
+| ID | Severity | Defect | Fix |
+|---|---|---|---|
+| D-06 | Medium | Compare table used auto layout, so the longest caption stretched one column: stone images rendered at different sizes and rows did not align — defeating the purpose of a comparison. | `table-fixed` + `colgroup` for equal columns; header cells top-aligned so images start at the same y regardless of badges. |
+| D-07 | Medium | The Pages deploy workflow ran its smoke suite through `serve -s`, which is SPA mode and rewrites every path to `index.html` — turning each route check into a false pass. It also swallowed the result with `\|\| true`. | Replaced with a plain static file server matching how Pages resolves directory URLs, and removed `\|\| true` so a failing check fails the deploy. |
+
+### 9.3 Verification
+
+| Check | Result |
+|---|---|
+| Filter chips render for each active filter | Pass |
+| Removing a chip updates the URL and results (`?variety=Blue+Sapphire&treatment=natural` → `?variety=Blue+Sapphire`, 2 → 9 stones) | Pass |
+| Live region announces "9 stones matching 1 filter" | Pass |
+| Filtered view recorded for the back-link | Pass |
+| Selection bar appears at 2+ stones with thumbnails and remove controls | Pass |
+| Compare table: equal columns, aligned images, price/ct computed, lowest-per-carat badged | Pass |
+| Compare table: differing rows ruled and bolded, identical rows dimmed | Pass |
+| Unit + smoke suites after changes (79 / 59 full / 50 static) | Pass |
+| **Sticky bar reveal on scroll** | **Not verified — see below** |
+
+**Not verified.** The sticky bar depends on scroll events and
+`requestAnimationFrame`. Both were confirmed to be paused in the harness
+(`document.hidden === true`, `visibilityState: "hidden"`) — correct browser
+behaviour for a backgrounded page, and not an application fault. Two
+implementations (IntersectionObserver, then a scroll listener) were both
+unexercisable for this reason.
+
+The decision was extracted to `shouldRevealStickyBar()` and pinned by six unit
+tests covering the threshold, viewport scaling, and the top-of-page case. The
+unverified remainder is the listener plumbing. **Check by hand on a real phone
+before launch** — it is the only part of this pass without end-to-end evidence.

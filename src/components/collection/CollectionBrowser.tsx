@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GemCard } from '@/components/gem/GemCard';
+import { ActiveFilters } from './ActiveFilters';
 import { Button } from '@/components/primitives';
 import {
   applyFilters,
@@ -43,7 +44,15 @@ export function CollectionBrowser({ gems }: { gems: Gem[] }) {
     (patch: Partial<FilterState>) => {
       const next = { ...filters, ...patch };
       const qs = paramsFromFilters(next);
-      router.replace(qs ? `/collection?${qs}` : '/collection', { scroll: false });
+      const href = qs ? `/collection?${qs}` : '/collection';
+      try {
+        // Read back by the stone page to offer "back to your results" with the
+        // filters intact (Nielsen #3, user control and freedom).
+        window.sessionStorage.setItem('serendia.lastCollectionView', href);
+      } catch {
+        /* storage unavailable — the link simply falls back to /collection */
+      }
+      router.replace(href, { scroll: false });
     },
     [filters, router],
   );
@@ -75,6 +84,18 @@ export function CollectionBrowser({ gems }: { gems: Gem[] }) {
     document.body.style.overflow = drawerOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [drawerOpen]);
+
+  useEffect(() => {
+    const qs = searchParams.toString();
+    try {
+      window.sessionStorage.setItem(
+        'serendia.lastCollectionView',
+        qs ? `/collection?${qs}` : '/collection',
+      );
+    } catch {
+      /* storage unavailable */
+    }
+  }, [searchParams]);
 
   /**
    * The same panel is mounted twice on small screens — once in the (visually
@@ -226,6 +247,8 @@ export function CollectionBrowser({ gems }: { gems: Gem[] }) {
             </select>
           </div>
         </div>
+
+        <ActiveFilters filters={filters} onChange={update} resultCount={results.length} />
 
         {results.length === 0 ? (
           <div className="rounded-[var(--r-md)] border border-dashed border-[color:var(--panel-line)] px-8 py-20 text-center">

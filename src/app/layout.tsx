@@ -3,6 +3,10 @@ import { Cormorant_Garamond, Inter } from 'next/font/google';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { WishlistProvider } from '@/components/wishlist/WishlistProvider';
+import { AnnouncerProvider } from '@/components/feedback/Announcer';
+import { RouteProgress } from '@/components/feedback/RouteProgress';
+import { CompareBar } from '@/components/compare/CompareBar';
+import { getAllGems } from '@/lib/catalog';
 import { organizationJsonLd } from '@/lib/seo';
 import { SITE } from '@/lib/site';
 import './globals.css';
@@ -57,10 +61,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
         />
         <WishlistProvider>
-          <a href="#main" className="skip-link">Skip to content</a>
-          <SiteHeader />
-          <main id="main">{children}</main>
-          <SiteFooter />
+          <AnnouncerProvider>
+            <RouteProgress />
+            <a href="#main" className="skip-link">Skip to content</a>
+            <SiteHeader />
+            <main id="main">{children}</main>
+            <SiteFooter />
+            {/* Persistent selection + comparison affordance. Sits last so it
+                never intercepts focus order ahead of the page content. */}
+            <CompareBar gems={getAllGems()} />
+          </AnnouncerProvider>
         </WishlistProvider>
       </body>
     </html>

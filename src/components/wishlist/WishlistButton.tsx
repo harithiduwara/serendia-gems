@@ -1,5 +1,6 @@
 'use client';
 
+import { useAnnouncer } from '@/components/feedback/Announcer';
 import { useWishlist } from './WishlistProvider';
 
 export function WishlistButton({
@@ -12,12 +13,23 @@ export function WishlistButton({
   withLabel?: boolean;
 }) {
   const { has, toggle, ready } = useWishlist();
+  const { announce } = useAnnouncer();
   const saved = ready && has(code);
+
+  // Nielsen #1: the icon fill alone is easy to miss and silent to a screen
+  // reader that has not moved focus. Confirm, and make it reversible.
+  const onToggle = () => {
+    toggle(code);
+    announce(
+      saved ? `${code} removed from your selection` : `${code} saved to your selection`,
+      () => toggle(code),
+    );
+  };
 
   return (
     <button
       type="button"
-      onClick={() => toggle(code)}
+      onClick={onToggle}
       aria-pressed={saved}
       aria-label={saved ? `Remove ${code} from your selection` : `Save ${code} to your selection`}
       className={

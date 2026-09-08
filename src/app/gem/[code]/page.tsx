@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { BackToResults } from '@/components/gem/BackToResults';
 import { GemGallery } from '@/components/gem/GemGallery';
+import { StickyGemActions } from '@/components/gem/StickyGemActions';
 import { GemCard } from '@/components/gem/GemCard';
 import { SpecTable } from '@/components/gem/SpecTable';
 import { Badge, ButtonLink, Container, SectionHeading } from '@/components/primitives';
@@ -88,6 +90,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
             <li aria-hidden="true">/</li>
             <li className="t-num text-[color:var(--page-fg)]" aria-current="page">{gem.code}</li>
           </ol>
+          <BackToResults />
         </nav>
 
         <div className="grid gap-10 pb-16 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
@@ -151,6 +154,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
                       Email us
                     </ButtonLink>
                   </div>
+                  <StickyGemActions gem={gem} />
                   <p className="mt-4 text-[0.8125rem] leading-relaxed text-[color:var(--subtle-fg)]">
                     No payment is taken online. We reply with any further images, video and
                     certification you need, and only then discuss terms.

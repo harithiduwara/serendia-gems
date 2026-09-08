@@ -51,13 +51,18 @@ jobs:
 
       - name: Verify the export before publishing
         run: |
-          npx --yes serve@14 -s out -l 4321 --no-clipboard &
+          # NOT `serve -s`: that is SPA mode and rewrites every path to
+          # index.html, which silently turns each route check into a false pass.
+          # A plain static file server matches how Pages actually resolves
+          # directory-style URLs.
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory out &
           for i in $(seq 1 30); do
             curl -sf -o /dev/null http://127.0.0.1:4321/ && break
             sleep 1
           done
           # Served at the root locally; basePath only applies on Pages.
-          SMOKE_BASE_URL=http://127.0.0.1:4321 node scripts/smoke.mjs --static || true
+          # No `|| true` — a failing check must fail the deploy.
+          SMOKE_BASE_URL=http://127.0.0.1:4321 node scripts/smoke.mjs --static
           test -f out/.nojekyll
           test -f out/404.html
           test -d out/gem/HR16

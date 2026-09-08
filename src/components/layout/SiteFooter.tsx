@@ -15,6 +15,7 @@ const HOUSE_LINKS = [
   { href: '/about', label: 'Our house' },
   { href: '/contact', label: 'Contact' },
   { href: '/wishlist', label: 'Your selection' },
+  { href: '/compare', label: 'Compare stones' },
   { href: '/terms', label: 'Terms, shipping & returns' },
 ];
 
@@ -32,14 +33,14 @@ export function SiteFooter() {
               sold direct to the people who will wear and set them.
             </p>
             <div className="hairline-gold my-7 max-w-sm" />
-            <address className="not-italic text-sm space-y-1.5 text-[color:var(--muted-fg)]">
+            <address className="not-italic text-sm space-y-0.5 text-[color:var(--muted-fg)]">
               <p>
-                <a href={`mailto:${SITE.email}`} className="link-underline hover:text-white">
+                <a href={`mailto:${SITE.email}`} className="link-underline inline-flex min-h-6 items-center hover:text-white">
                   {SITE.email}
                 </a>
               </p>
               <p>
-                <a href={`tel:${SITE.phoneE164}`} className="link-underline hover:text-white">
+                <a href={`tel:${SITE.phoneE164}`} className="link-underline inline-flex min-h-6 items-center hover:text-white">
                   {SITE.phoneDisplay}
                 </a>
               </p>
@@ -78,12 +79,14 @@ function FooterColumn({
   return (
     <div>
       <h2 className="t-eyebrow text-gold-bright mb-4">{title}</h2>
-      <ul className="space-y-2.5">
+      <ul className="space-y-1.5">
         {links.map((l) => (
           <li key={l.href}>
+            {/* inline-flex + min-height meets WCAG 2.2 SC 2.5.8 (24x24 minimum)
+                without visually changing the list's rhythm. */}
             <Link
               href={l.href}
-              className="text-sm text-[color:var(--muted-fg)] transition-colors duration-200 hover:text-white"
+              className="inline-flex min-h-6 items-center text-sm text-[color:var(--muted-fg)] transition-colors duration-200 hover:text-white"
             >
               {l.label}
             </Link>

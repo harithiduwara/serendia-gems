@@ -25,6 +25,43 @@ export function EnquiryForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
   const [message, setMessage] = useState('');
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const MESSAGE_MAX = 4000;
+
+  /**
+   * Nielsen #5, error prevention: catch a mistyped email at the moment the
+   * field is left rather than after the whole form is submitted and rejected.
+   * Only fields the user has actually visited are validated, so the form never
+   * scolds them about work they have not done yet.
+   */
+  const validateField = (name: string, value: string) => {
+    if (!touched[name]) return;
+    const single = enquirySchema.shape[name as 'name' | 'email' | 'message'];
+    if (!single) return;
+    const result = single.safeParse(value);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (result.success) delete next[name];
+      else next[name] = result.error.issues[0]?.message ?? 'Please check this field.';
+      return next;
+    });
+  };
+
+  const onBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched((t) => ({ ...t, [name]: true }));
+    // Read through the updated flag directly; state has not committed yet.
+    const single = enquirySchema.shape[name as 'name' | 'email' | 'message'];
+    if (!single) return;
+    const result = single.safeParse(value);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (result.success) delete next[name];
+      else next[name] = result.error.issues[0]?.message ?? 'Please check this field.';
+      return next;
+    });
+  };
 
   // A stone code arriving as ?gem=HR16 pre-fills the message so the buyer
   // never has to retype what they were looking at.
@@ -162,6 +199,8 @@ export function EnquiryForm() {
         <Field label="Your name" htmlFor="name" required error={errors.name}>
           <input
             id="name" name="name" type="text" required autoComplete="name"
+            onBlur={onBlur}
+            onChange={(e) => validateField('name', e.target.value)}
             className={inputClass}
             aria-invalid={Boolean(errors.name)}
             aria-describedby={errors.name ? 'name-error' : undefined}
@@ -170,6 +209,8 @@ export function EnquiryForm() {
         <Field label="Email" htmlFor="email" required error={errors.email}>
           <input
             id="email" name="email" type="email" required autoComplete="email"
+            onBlur={onBlur}
+            onChange={(e) => validateField('email', e.target.value)}
             className={inputClass}
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? 'email-error' : undefined}
@@ -193,11 +234,25 @@ export function EnquiryForm() {
         <textarea
           id="message" name="message" required rows={6}
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          maxLength={MESSAGE_MAX}
+          onBlur={onBlur}
+          onChange={(e) => { setMessage(e.target.value); validateField('message', e.target.value); }}
           className={`${inputClass} resize-y`}
           aria-invalid={Boolean(errors.message)}
-          aria-describedby={errors.message ? 'message-error' : undefined}
+          aria-describedby={`message-count${errors.message ? ' message-error' : ''}`}
         />
+        {/* Only surfaces near the limit — a counter shown from character one is
+            a distraction, and at 90% it becomes genuinely useful. */}
+        <p
+          id="message-count"
+          className={`mt-1.5 text-right text-xs tabular-nums ${
+            message.length > MESSAGE_MAX * 0.9 ? 'text-warning' : 'text-[color:var(--subtle-fg)]'
+          }`}
+        >
+          {message.length > MESSAGE_MAX * 0.75
+            ? `${MESSAGE_MAX - message.length} characters left`
+            : '\u00A0'}
+        </p>
       </Field>
 
       {/* Honeypot — hidden from people, irresistible to bots. */}
