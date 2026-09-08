@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getAllGems } from '@/lib/catalog';
-import { GUIDE_PAGES, SITE } from '@/lib/site';
+import { GUIDE_PAGES, absoluteUrl } from '@/lib/site';
 
 /**
  * Content depends only on the compiled catalogue, never on the request, so this
@@ -10,7 +10,7 @@ export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const url = (p: string) => new URL(p, SITE.url).toString();
+  const url = absoluteUrl;
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: url('/'), lastModified: now, changeFrequency: 'weekly', priority: 1 },

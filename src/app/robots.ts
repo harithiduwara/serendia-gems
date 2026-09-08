@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { SITE } from '@/lib/site';
+import { SITE, absoluteUrl } from '@/lib/site';
 
 /**
  * Content depends only on the compiled catalogue, never on the request, so this
@@ -10,7 +10,7 @@ export const dynamic = 'force-static';
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [{ userAgent: '*', allow: '/', disallow: ['/api/'] }],
-    sitemap: new URL('/sitemap.xml', SITE.url).toString(),
+    sitemap: absoluteUrl('/sitemap.xml'),
     host: SITE.url,
   };
 }

@@ -104,6 +104,37 @@ const run = async () => {
     const { body } = await get('/gem/HR16');
     check('PDP emits an Offer with the correct price', body.includes('"price":11700'));
     check('PDP emits BreadcrumbList', body.includes('BreadcrumbList'));
+
+    // Regression guard: on a project site (basePath) a naive
+    // `new URL(path, base)` silently drops the prefix and points every
+    // canonical, og:url and og:image at a 404. Assert the emitted absolute
+    // URLs actually live under the origin being tested.
+    const canonical = body.match(/rel="canonical" href="([^"]+)"/)?.[1] ?? '';
+    check('canonical points at this deployment', canonical.startsWith(BASE), `got ${canonical || '(none)'}`);
+    check('canonical names the right lot', /\/gem\/HR16\/?$/.test(canonical), `got ${canonical}`);
+
+    const ogUrl = body.match(/property="og:url" content="([^"]+)"/)?.[1] ?? '';
+    check('og:url points at this deployment', ogUrl.startsWith(BASE), `got ${ogUrl || '(none)'}`);
+
+    const ogImg = body.match(/property="og:image" content="([^"]+)"/)?.[1] ?? '';
+    check('og:image points at this deployment', ogImg.startsWith(BASE), `got ${ogImg || '(none)'}`);
+    if (ogImg.startsWith(BASE)) {
+      const r = await fetch(ogImg);
+      check('og:image actually resolves', r.ok, `HTTP ${r.status}`);
+    }
+  }
+  {
+    const { body } = await get('/sitemap.xml');
+    const locs = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    check('every sitemap URL points at this deployment',
+      locs.length > 0 && locs.every((l) => l.startsWith(BASE)),
+      `${locs.filter((l) => !l.startsWith(BASE)).length} of ${locs.length} wrong`);
+    // Prove they are real, not just well-formed.
+    const sample = locs.find((l) => l.includes('/gem/'));
+    if (sample) {
+      const r = await fetch(sample);
+      check('a sitemap lot URL resolves', r.ok, `${sample} → HTTP ${r.status}`);
+    }
   }
 
   // ── Accessibility landmarks ──────────────────────────────────────────────

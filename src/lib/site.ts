@@ -32,6 +32,36 @@ export const SITE = {
   founded: 1998,
 } as const;
 
+/**
+ * Whether URLs are served directory-style (trailing slash). The static export
+ * sets `trailingSlash: true`, so canonicals must match to be byte-identical to
+ * the URL actually served.
+ */
+const TRAILING_SLASH = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
+
+/**
+ * Builds an absolute URL, preserving any path prefix already in `SITE.url`.
+ *
+ * Do NOT use `new URL(path, SITE.url)` for this. Per the URL spec a
+ * path-absolute reference replaces the base's entire path, so
+ *
+ *   new URL('/collection', 'https://host/serendia-gems')
+ *     → 'https://host/collection'        ← the basePath is silently dropped
+ *
+ * On a GitHub Pages project site that pointed every canonical, og:url, og:image
+ * and sitemap entry at a 404. Covered by tests in tests/seo.test.ts.
+ */
+export const absoluteUrl = (path: string): string => {
+  const base = SITE.url.replace(/\/+$/, '');
+  if (path === '' || path === '/') return `${base}/`;
+
+  const clean = `/${path.replace(/^\/+/, '').replace(/\/+$/, '')}`;
+  // Files (og-default.png, a gem JPEG) never take a trailing slash.
+  const isFile = /\.[a-z0-9]{2,5}$/i.test(clean);
+
+  return `${base}${clean}${TRAILING_SLASH && !isFile ? '/' : ''}`;
+};
+
 export const NAV = [
   { href: '/collection', label: 'Collection' },
   { href: '/guide/ceylon-sapphires', label: 'Ceylon Sapphires' },

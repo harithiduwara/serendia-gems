@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { SITE } from './site';
+import { SITE, absoluteUrl } from './site';
 import { formatCarats, formatTreatment } from './format';
 import { altFor, imagePath } from './catalog';
 import type { Gem } from './types';
 
-const abs = (path: string): string => new URL(path, SITE.url).toString();
+const abs = absoluteUrl;
 
 export const buildMetadata = ({
   title,
