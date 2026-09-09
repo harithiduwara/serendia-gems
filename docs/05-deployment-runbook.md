@@ -10,7 +10,8 @@ Version 1.0 · 2026-09-08
 
 | # | Item | Where | Why it blocks |
 |---|---|---|---|
-| B-01 | Replace phone, WhatsApp, email and street address | `src/lib/site.ts` — the `SITE` object, marked with a warning comment | The current values are illustrative. A customer would try to contact a number that does not exist. |
+| ~~B-01a~~ | ~~Replace phone and WhatsApp number~~ | `src/lib/site.ts` | **Done 2026-09-09** — real number `+94 77 880 0467` in all three forms, guarded by `tests/site.test.ts`. |
+| B-01b | Replace `email` and `address.street` | `src/lib/site.ts`, both marked with a warning comment | Still illustrative. `enquiries@serendiagems.com` does not resolve until the domain's mail is configured, so enquiry replies would bounce. |
 | B-02 | Point `NEXT_PUBLIC_SITE_URL` at the real origin | Hosting environment variables | Canonical URLs, the sitemap and OG tags all derive from it. Wrong value = wrong canonicals = SEO damage. |
 | B-03 | Confirm the return window and shipping terms are the merchant's actual policy | `src/app/terms/page.tsx` | The site currently promises a seven-day return. If that is not the policy, it is a false statement of terms. |
 | B-04 | Wire enquiry delivery, or confirm console logging is acceptable | `src/app/api/enquiry/route.ts` §6 | Otherwise enquiries land only in server logs and will be missed. |

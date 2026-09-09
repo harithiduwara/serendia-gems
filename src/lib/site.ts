@@ -1,10 +1,13 @@
 /**
  * Brand and contact constants.
  *
- * ⚠️  PLACEHOLDERS — see docs/01-requirements-srs.md A-04.
- * The phone, email and address below are illustrative and MUST be replaced with
- * the merchant's real details before go-live. They are isolated in this one
- * module so that replacement is a single, reviewable edit.
+ * The phone / WhatsApp number is the merchant's real number, confirmed
+ * 2026-09-09.
+ *
+ * ⚠️  STILL PLACEHOLDERS — see docs/01-requirements-srs.md A-04:
+ * `email` and `address.street` remain illustrative and MUST be replaced before
+ * the site is promoted. They are isolated here so replacement stays a single,
+ * reviewable edit.
  */
 export const SITE = {
   name: 'Serendia Gems',
@@ -15,19 +18,24 @@ export const SITE = {
   description:
     'Individually photographed and specified Ceylon sapphires from Sri Lanka — unheated and heated blue, yellow, pink, violet, green and white sapphire, sold direct.',
 
-  // ── Replace before go-live ───────────────────────────────
+  // ⚠️  Still a placeholder — replace before promoting the site.
   email: 'enquiries@serendiagems.com',
-  phoneDisplay: '+94 77 000 0000',
-  phoneE164: '+94770000000',
-  whatsapp: '94770000000',
+
+  // Real number. Three forms, because each consumer needs a different one:
+  // `phoneDisplay` is what a human reads, `phoneE164` is what `tel:` needs,
+  // and `whatsapp` is the wa.me path segment (digits only, no leading plus).
+  phoneDisplay: '+94 77 880 0467',
+  phoneE164: '+94778800467',
+  whatsapp: '94778800467',
+
   address: {
+    // ⚠️  Still a placeholder — replace before promoting the site.
     street: 'Gem Merchants Quarter',
     city: 'Ratnapura',
     region: 'Sabaragamuwa',
     country: 'Sri Lanka',
     countryCode: 'LK',
   },
-  // ─────────────────────────────────────────────────────────
 
   founded: 1998,
 } as const;

@@ -88,7 +88,8 @@ export const organizationJsonLd = (): Record<string, unknown> => ({
   description: SITE.description,
   url: SITE.url,
   email: SITE.email,
-  telephone: SITE.phoneDisplay,
+  // E.164 rather than the display string: this is machine-read.
+  telephone: SITE.phoneE164,
   address: {
     '@type': 'PostalAddress',
     streetAddress: SITE.address.street,
