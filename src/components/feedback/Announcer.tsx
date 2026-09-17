@@ -58,7 +58,7 @@ export function AnnouncerProvider({ children }: { children: ReactNode }) {
                   t.undo?.();
                   setToasts((prev) => prev.filter((x) => x.id !== t.id));
                 }}
-                className="min-h-9 rounded-full px-3 text-[0.8125rem] font-semibold text-royal underline underline-offset-2 hover:bg-mist/60 dark:text-cornflower"
+                className="min-h-9 rounded-full px-3 text-[0.8125rem] font-semibold text-royal underline underline-offset-2 hover:bg-mist/60"
               >
                 Undo
               </button>

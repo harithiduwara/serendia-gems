@@ -273,7 +273,7 @@ export function CollectionBrowser({ gems }: { gems: Gem[] }) {
       {/* Mobile filter drawer */}
       {drawerOpen ? (
         <div className="fixed inset-0 z-[90] lg:hidden" role="dialog" aria-modal="true" aria-label="Filter the collection">
-          <button className="absolute inset-0 bg-abyss/60" onClick={() => setDrawerOpen(false)} aria-label="Close filters" tabIndex={-1} />
+          <button className="absolute inset-0 bg-ink/30" onClick={() => setDrawerOpen(false)} aria-label="Close filters" tabIndex={-1} />
           <div className="absolute inset-y-0 right-0 flex w-[min(22rem,90vw)] flex-col bg-[color:var(--page-bg)] shadow-[var(--shadow-3)]">
             <div className="flex items-center justify-between border-b border-[color:var(--panel-line)] px-5 py-4">
               <h2 className="t-title">Refine</h2>

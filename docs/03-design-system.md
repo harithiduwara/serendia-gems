@@ -8,72 +8,81 @@ Version 1.0 · 2026-09-08
 
 **The stone is the hero. Everything else recedes.**
 
-The single most important visual decision in this build is what colour the page is
-behind a photograph of a gem.
+**White theme, always.** Every surface is white or a near-white neutral, on every
+device, including ones set to dark mode (§8). The royal blue sapphire identity is
+carried by type and accents rather than by coloured backgrounds: the logo, headings,
+buttons, links, prices, active states and the focus ring are royal blue; section
+labels, rules and small details are gold.
 
-The supplied photography is shot on pale grey and beige backgrounds. Placing those
-images on a dark navy page would surround each stone with a glowing pale rectangle —
-the frame would compete with the gem, and colour perception would shift. Gemmological
-practice is to grade colour against neutral light-to-mid backgrounds for exactly this
-reason.
+The deciding constraint is what sits behind a photograph of a gem. The photography is
+shot on pale grey backgrounds; gemmological practice is to judge colour against a
+neutral light ground. So every stone photograph sits on a light neutral **mat**
+(`--color-sunken`), which separates the photo from the white page without changing
+how the stone's colour reads.
 
-So the catalogue canvas is **warm ivory**, and the royal blue sapphire identity is
-carried by structure rather than by flooding the background: the masthead, the hero
-band, the footer, the CTA bands, every heading, link, focus ring, and rule. The result
-reads unmistakably as a sapphire house, while every stone still reads true.
+*History:* 1.0 used a warm ivory canvas with navy hero, footer and call-to-action
+bands, plus an automatic dark mode. Replaced 2026-09-17 with this white theme at the
+owner's request.
 
 ## 2. Colour tokens
 
-Defined once in `globals.css` as CSS custom properties. Never hard-code a hex value in a
-component.
+Defined once in `src/app/globals.css` as Tailwind `@theme` tokens. Never hard-code a
+hex value in a component.
 
 ### Brand — the sapphire scale
 | Token | Value | Use |
 |---|---|---|
-| `--royal-abyss` | `#060C1F` | Deepest ground; footer, hero overlay base |
-| `--royal-deep` | `#0B1838` | Masthead, dark bands |
-| `--royal` | `#16327E` | Primary brand blue; buttons, headings |
-| `--royal-bright` | `#2B57C4` | Links, active states |
-| `--cornflower` | `#5B87E8` | Accent on dark grounds, focus ring |
-| `--sapphire-mist` | `#DCE5FA` | Tinted surfaces, chips |
+| `--color-royal-deep` | `#0B1838` | Display headings, logotype |
+| `--color-royal` | `#16327E` | Primary brand blue: buttons, prices, links, active states |
+| `--color-royal-bright` | `#2B57C4` | Hover states, focus ring |
+| `--color-mist` | `#DCE5FA` | Tinted panels and chips, always at reduced opacity |
 
 ### Metal — the setting
 | Token | Value | Use |
 |---|---|---|
-| `--gold` | `#A8863A` | Hairlines, small-caps eyebrows, on-dark accents |
-| `--gold-bright` | `#D4B968` | On-dark text accents only |
+| `--color-gold` | `#826424` | Section labels (eyebrows), check icons, saved state. **Text-safe.** |
+| `--color-gold-bright` | `#C9A961` | Hairlines and the logo outline only. **Never text** (2.3 : 1). |
 
 ### Neutral — the canvas
 | Token | Value | Use |
 |---|---|---|
-| `--canvas` | `#FBFAF7` | Page ground (warm ivory) |
-| `--surface` | `#FFFFFF` | Cards, panels |
-| `--surface-sunken` | `#F2F0EA` | Wells, image mats |
-| `--ink` | `#0F1729` | Body text |
-| `--ink-muted` | `#5A6178` | Secondary text |
-| `--ink-subtle` | `#8A90A3` | Tertiary, metadata |
-| `--line` | `#E4E1D8` | Borders, rules |
+| `--color-canvas` | `#FFFFFF` | Page ground |
+| `--color-surface` | `#FFFFFF` | Cards, panels |
+| `--color-sunken` | `#F5F5F3` | Image mats, footer, wells |
+| `--color-ink` | `#0F1729` | Body text |
+| `--color-ink-muted` | `#5A6178` | Secondary text |
+| `--color-ink-subtle` | `#687084` | Metadata, lot codes, footnotes |
+| `--color-line` | `#E6E6E2` | Borders, rules |
 
 ### Semantic
 | Token | Value | Use |
 |---|---|---|
-| `--positive` | `#1F6D4A` | Available |
-| `--warning` | `#8A6212` | Reserved |
-| `--critical` | `#9B2C2C` | Sold, errors |
+| `--color-positive` | `#1F6D4A` | Available |
+| `--color-warning` | `#8A6212` | Reserved |
+| `--color-critical` | `#9B2C2C` | Sold, errors |
 
-### Contrast verification (WCAG 2.1)
-| Pair | Ratio | Verdict |
-|---|---|---|
-| `--ink` on `--canvas` | 15.8 : 1 | AAA |
-| `--ink-muted` on `--canvas` | 6.4 : 1 | AA (all sizes) |
-| `--ink-subtle` on `--canvas` | 3.5 : 1 | AA large / non-text only |
-| `--royal` on `--canvas` | 10.9 : 1 | AAA |
-| `--canvas` on `--royal` | 10.9 : 1 | AAA |
-| `--gold-bright` on `--royal-abyss` | 8.9 : 1 | AAA |
-| `--gold` on `--canvas` | 3.6 : 1 | Non-text / large only — never body copy |
+### Contrast verification (WCAG 2.1 AA)
 
-`--ink-subtle` and `--gold` are restricted by rule, not by convention: they appear only
-on rules, icons, and text at 18 px+ semibold or larger.
+Measured, not estimated. Text needs 4.5 : 1; focus rings and icons need 3 : 1.
+Every text colour is checked against **both** grounds it can sit on.
+
+| Colour | On white | On `sunken` | Verdict |
+|---|---|---|---|
+| `ink` `#0F1729` | 17.9 : 1 | 16.4 : 1 | AAA |
+| `ink-muted` `#5A6178` | 6.2 : 1 | 5.6 : 1 | AA |
+| `ink-subtle` `#687084` | 5.0 : 1 | 4.5 : 1 | AA |
+| `royal` `#16327E` | 11.7 : 1 | 10.7 : 1 | AAA |
+| `royal-bright` `#2B57C4` (focus ring) | 6.4 : 1 | 5.9 : 1 | AA |
+| `gold` `#826424` | 5.5 : 1 | 5.1 : 1 | AA |
+| `positive` / `warning` / `critical` | 6.3 / 5.5 / 7.5 : 1 | 5.8 / 5.0 / 6.9 : 1 | AA |
+| White on `royal` (buttons) | 11.7 : 1 | — | AAA |
+| White on `gold` (saved-count badge) | 5.5 : 1 | — | AA |
+
+**Two 1.0 failures fixed in the process.** The 1.0 table limited `ink-subtle`
+(`#8A90A3`, 3.2 : 1 on white) and `gold` (`#A8863A`, 3.4 : 1) to large text, but the
+code used both for 12–13 px text: lot codes, footnotes and every section label. The
+rule was documented and not followed. Instead of relying on that rule, both tokens
+were darkened until any size of text passes.
 
 ## 3. Typography
 
@@ -139,20 +148,29 @@ component so it cannot be forgotten.
 
 ## 7. Accessibility commitments
 
-- Single visible focus style everywhere: `2px` `--cornflower` ring, `2px` offset. Never removed.
+- Single visible focus style everywhere: `2px` `--color-royal-bright` ring, `2px` offset (6.4 : 1 on white). Never removed.
 - "Skip to content" as the first focusable element.
 - One `<h1>` per page; heading levels never skipped.
 - Landmarks: `header`, `nav`, `main`, `footer`.
 - Alt text names the actual stone — `"HR16 — 5.35 ct royal blue cushion-cut Ceylon sapphire, held in tweezers"` — never `"gem"` or `""`.
 - Filter results announced via a polite live region.
-- Lightbox: focus trapped, restored on close, Escape closes.
+- Lightbox: focus trapped, restored on close, Escape closes. Rendered into `<body>` through a portal. The desktop gallery column is `position: sticky`, which creates its own stacking context, so rendered in place the site header covered the lightbox's close button.
 - Full keyboard operability; no hover-only affordances.
 
-## 8. Dark mode
+## 8. No dark mode
 
-Supported. The canvas becomes `--royal-abyss` and ink inverts, **but gem image wells stay
-on a light neutral mat** — preserving the §1 principle in both themes. Implemented with
-`prefers-color-scheme` over the same token names, so no component changes.
+The site stays white regardless of the visitor's device setting. Three measures keep
+it that way:
+
+1. No `prefers-color-scheme: dark` rules exist in the stylesheet.
+2. Tailwind's `dark:` variant is rebound to a `.dark` class that is never set
+   (`@custom-variant dark` in `globals.css`). A `dark:` utility added later does
+   nothing, instead of silently repainting the site navy on dark-mode devices.
+3. `color-scheme: light` is declared, so native controls (selects, inputs,
+   scrollbars) also stay light, and the browser theme colour is white.
+
+Verified by emulating a dark-mode device: page, header, footer, lightbox and form
+controls all render white.
 
 ---
 

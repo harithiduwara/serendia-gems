@@ -131,7 +131,7 @@ export function CompareView({ gems }: { gems: Gem[] }) {
                         </svg>
                       </button>
                     </div>
-                    <Link href={`/gem/${g.code}`} className="t-title block hover:text-royal dark:hover:text-cornflower">
+                    <Link href={`/gem/${g.code}`} className="t-title block hover:text-royal">
                       <span className="t-num text-[color:var(--subtle-fg)]">{g.code}</span>{' '}
                       {g.variety}
                     </Link>

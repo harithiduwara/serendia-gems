@@ -78,7 +78,7 @@ export function StickyGemActions({ gem }: { gem: Gem }) {
             <p className="t-num truncate text-[0.6875rem] text-[color:var(--subtle-fg)]">
               {gem.code} · {formatCarats(gem.carats)} {gem.shape}
             </p>
-            <p className="t-num font-display text-[1.25rem] font-medium leading-tight text-royal dark:text-cornflower">
+            <p className="t-num font-display text-[1.25rem] font-medium leading-tight text-royal">
               {formatUSD(gem.priceUSD)}
             </p>
           </div>

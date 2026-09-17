@@ -23,11 +23,11 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="sapphire-ground on-dark mt-24 sm:mt-32">
+    <footer className="mt-24 border-t border-[color:var(--panel-line)] bg-[color:var(--color-sunken)] sm:mt-32">
       <Container>
         <div className="grid gap-12 py-16 sm:py-20 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <Logo onDark />
+            <Logo />
             <p className="t-lead mt-5 max-w-sm !text-[0.9375rem]">
               Ceylon sapphires from Sri Lanka, photographed and specified one stone at a time,
               sold direct to the people who will wear and set them.
@@ -35,12 +35,12 @@ export function SiteFooter() {
             <div className="hairline-gold my-7 max-w-sm" />
             <address className="not-italic text-sm space-y-0.5 text-[color:var(--muted-fg)]">
               <p>
-                <a href={`mailto:${SITE.email}`} className="link-underline inline-flex min-h-6 items-center hover:text-white">
+                <a href={`mailto:${SITE.email}`} className="link-underline inline-flex min-h-6 items-center hover:text-royal">
                   {SITE.email}
                 </a>
               </p>
               <p>
-                <a href={`tel:${SITE.phoneE164}`} className="link-underline inline-flex min-h-6 items-center hover:text-white">
+                <a href={`tel:${SITE.phoneE164}`} className="link-underline inline-flex min-h-6 items-center hover:text-royal">
                   {SITE.phoneDisplay}
                 </a>
               </p>
@@ -55,7 +55,7 @@ export function SiteFooter() {
           <FooterColumn title="The House" links={HOUSE_LINKS} />
         </div>
 
-        <div className="flex flex-col gap-4 border-t border-white/10 py-7 text-xs text-[color:var(--subtle-fg)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-[color:var(--panel-line)] py-7 text-xs text-[color:var(--subtle-fg)] sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {SITE.legalName}. All rights reserved.
           </p>
@@ -78,7 +78,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h2 className="t-eyebrow text-gold-bright mb-4">{title}</h2>
+      <h2 className="t-eyebrow text-gold mb-4">{title}</h2>
       <ul className="space-y-1.5">
         {links.map((l) => (
           <li key={l.href}>
@@ -86,7 +86,7 @@ function FooterColumn({
                 without visually changing the list's rhythm. */}
             <Link
               href={l.href}
-              className="inline-flex min-h-6 items-center text-sm text-[color:var(--muted-fg)] transition-colors duration-200 hover:text-white"
+              className="inline-flex min-h-6 items-center text-sm text-[color:var(--muted-fg)] transition-colors duration-200 hover:text-royal"
             >
               {l.label}
             </Link>

@@ -78,7 +78,7 @@ export function ActiveFilters({
           // The accessible name states the outcome, not just the label, so it is
           // unambiguous out of visual context.
           aria-label={`Remove filter: ${chip.label}`}
-          className="group inline-flex min-h-9 items-center gap-1.5 rounded-full border border-royal/25 bg-mist/60 py-1 pl-3 pr-2 text-[0.8125rem] font-medium text-royal transition-colors hover:border-royal hover:bg-royal hover:text-white dark:bg-royal/20 dark:text-cornflower dark:hover:bg-cornflower dark:hover:text-abyss"
+          className="group inline-flex min-h-9 items-center gap-1.5 rounded-full border border-royal/25 bg-mist/60 py-1 pl-3 pr-2 text-[0.8125rem] font-medium text-royal transition-colors hover:border-royal hover:bg-royal hover:text-white"
         >
           {chip.label}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">

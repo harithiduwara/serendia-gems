@@ -85,11 +85,12 @@ records — never colour, clarity, or cut quality. This is enforced by a test th
 regex-scans for observational vocabulary, so adding invented detail will fail the build.
 It is a trust guarantee, not a style preference.
 
-**2. Design principle.** The catalogue canvas is warm ivory, not dark navy, because the
-photography is shot on pale backgrounds and a dark page would frame each stone in a
-glowing rectangle and shift its perceived colour. The Royal Blue Sapphire identity is
-carried by structure — masthead, hero, footer, headings, links, focus rings. Image mats
-stay light **in both themes**. See `docs/03-design-system.md` §1.
+**2. Design principle.** White theme, always, including on devices set to dark mode.
+The Royal Blue Sapphire identity is carried by type and accents (headings, buttons,
+prices, links, focus rings), with gold for section labels and rules. Every text colour
+was chosen by measured contrast, so do not lighten a text token without re-measuring.
+Stone photographs sit on a light neutral mat so their colour reads true. See
+`docs/03-design-system.md` §1, §2 and §8.
 
 ## Before you deploy
 

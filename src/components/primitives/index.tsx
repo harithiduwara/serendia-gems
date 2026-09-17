@@ -19,7 +19,7 @@ export function Container({
 
 /* ── Button ─────────────────────────────────────────────────────────────── */
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'gold';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BUTTON_BASE =
@@ -31,10 +31,8 @@ const BUTTON_BASE =
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-royal text-white hover:bg-royal-bright shadow-[var(--shadow-1)]',
   secondary:
-    'border border-royal/35 text-royal hover:bg-royal hover:text-white hover:border-royal ' +
-    'dark:text-cornflower dark:border-cornflower/40 dark:hover:bg-cornflower dark:hover:text-abyss',
+    'border border-royal/35 text-royal hover:bg-royal hover:text-white hover:border-royal',
   ghost: 'text-[color:var(--page-fg)] hover:bg-[color:var(--color-mist)]/60',
-  gold: 'bg-gold-bright text-abyss hover:bg-white',
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
@@ -98,8 +96,8 @@ type BadgeTone = 'natural' | 'heated' | 'pair' | 'neutral' | 'positive' | 'warni
 
 const BADGE_TONES: Record<BadgeTone, string> = {
   natural: 'border-gold/60 text-gold bg-gold/5',
-  heated: 'border-royal/25 text-royal bg-royal/5 dark:text-cornflower dark:border-cornflower/30',
-  pair: 'border-royal/25 text-royal bg-mist/70 dark:text-cornflower dark:bg-royal/20',
+  heated: 'border-royal/25 text-royal bg-royal/5',
+  pair: 'border-royal/25 text-royal bg-mist/70',
   neutral: 'border-[color:var(--panel-line)] text-[color:var(--muted-fg)]',
   positive: 'border-positive/30 text-positive bg-positive/5',
   warning: 'border-warning/35 text-warning bg-warning/5',

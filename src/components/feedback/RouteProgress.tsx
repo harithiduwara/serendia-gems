@@ -67,7 +67,7 @@ export function RouteProgress() {
       aria-busy="true"
     >
       <div
-        className="h-full bg-gold-bright transition-[width] duration-200 ease-out"
+        className="h-full bg-royal transition-[width] duration-200 ease-out"
         style={{ width: `${progress}%` }}
       />
     </div>

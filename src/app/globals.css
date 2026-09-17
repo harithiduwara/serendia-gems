@@ -1,32 +1,41 @@
 @import 'tailwindcss';
 
+/*
+ * White theme only. Tailwind's `dark:` variant normally follows the visitor's
+ * OS setting, which would repaint parts of the site navy on any device in dark
+ * mode. Binding it to a `.dark` class that is never set makes any `dark:`
+ * utility inert, so the site stays white everywhere.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ═══════════════════════════════════════════════════════════════════════════
-   ROYAL BLUE SAPPHIRE — design tokens
-   Specified in docs/03-design-system.md. Never hard-code a colour in a
+   ROYAL BLUE SAPPHIRE — design tokens (white theme)
+   Specified in docs/03-design-system.md. Text colours were chosen by measured
+   contrast against white and against the light grey mat — see §2 there. Never hard-code a colour in a
    component; add a token here instead.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
   /* Brand — the sapphire scale */
-  --color-abyss: #060c1f;
   --color-royal-deep: #0b1838;
   --color-royal: #16327e;
   --color-royal-bright: #2b57c4;
-  --color-cornflower: #5b87e8;
   --color-mist: #dce5fa;
 
-  /* Metal — the setting */
-  --color-gold: #a8863a;
-  --color-gold-bright: #d4b968;
+  /* Metal — the setting.
+     `gold` is dark enough to be TEXT (5.5:1 on white). `gold-bright` is
+     decorative only — hairlines and borders — and must never carry text. */
+  --color-gold: #826424;
+  --color-gold-bright: #c9a961;
 
   /* Neutral — the canvas */
-  --color-canvas: #fbfaf7;
+  --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-sunken: #f2f0ea;
+  --color-sunken: #f5f5f3;
   --color-ink: #0f1729;
   --color-ink-muted: #5a6178;
-  --color-ink-subtle: #8a90a3;
-  --color-line: #e4e1d8;
+  --color-ink-subtle: #687084; /* was #8a90a3 — 3.2:1, failed AA for small text */
+  --color-line: #e6e6e2;
 
   /* Semantic */
   --color-positive: #1f6d4a;
@@ -54,35 +63,19 @@
 
   --shadow-1: 0 1px 2px rgb(15 23 41 / 0.04), 0 2px 8px rgb(15 23 41 / 0.04);
   --shadow-2: 0 2px 4px rgb(15 23 41 / 0.06), 0 12px 28px rgb(15 23 41 / 0.10);
-  --shadow-3: 0 24px 70px rgb(6 12 31 / 0.45);
+  --shadow-3: 0 24px 60px rgb(15 23 41 / 0.14);
 
-  /* Semantic aliases — components reference these, not raw palette names,
-     so dark mode is a token swap rather than a component change. */
+  /* Semantic aliases — components reference these, not raw palette names. */
   --page-bg: var(--color-canvas);
   --page-fg: var(--color-ink);
   --panel-bg: var(--color-surface);
   --panel-line: var(--color-line);
   --muted-fg: var(--color-ink-muted);
   --subtle-fg: var(--color-ink-subtle);
-  /* The image mat stays light in BOTH themes — see design-system.md §1/§8. */
+  /* Light neutral mat behind every stone photograph — see design-system.md §1. */
   --mat-bg: var(--color-sunken);
 
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page-bg: var(--color-abyss);
-    --page-fg: #eef1f8;
-    --panel-bg: #0d1730;
-    --panel-line: #1e2c4f;
-    --muted-fg: #9aa3bd;
-    --subtle-fg: #6f7893;
-    --mat-bg: #e8e6e0; /* deliberately still light */
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.4), 0 12px 28px rgb(0 0 0 / 0.5);
-    color-scheme: dark;
-  }
 }
 
 /* ── Base layer ──────────────────────────────────────────────────────────── */
@@ -104,7 +97,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 400; letter-spac
 
 /* One focus style, everywhere, never removed (design-system.md §7). */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-cornflower);
+  /* royal-bright: 6.4:1 on white. Cornflower was 3.2:1 on the grey mat. */
+  outline: 2px solid var(--color-royal-bright);
   outline-offset: 2px;
   border-radius: var(--r-sm);
 }
@@ -135,21 +129,20 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 400; letter-spac
 /* ── Composed utilities ──────────────────────────────────────────────────── */
 
 .hairline-gold {
-  background: linear-gradient(90deg, transparent, var(--color-gold) 18%, var(--color-gold) 82%, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-gold-bright) 18%, var(--color-gold-bright) 82%, transparent);
   height: 1px;
 }
 
-.on-dark { --page-fg: #eef1f8; --muted-fg: #a9b4d0; --subtle-fg: #7f8aa8; --panel-line: #1e2c4f; }
-
-/* Deep sapphire ground used by the hero, CTA bands and the footer. */
-.sapphire-ground {
+/* The hero's only colour: a faint sapphire light across white. Kept below
+   8% opacity so the ground still reads as white, not blue. */
+.hero-wash {
   background:
-    radial-gradient(120% 90% at 15% 0%,   rgb(43 87 196 / 0.30) 0%, transparent 55%),
-    radial-gradient(100% 80% at 85% 100%, rgb(91 135 232 / 0.18) 0%, transparent 60%),
-    linear-gradient(170deg, var(--color-royal-deep) 0%, var(--color-abyss) 100%);
+    radial-gradient(80% 70% at 12% 0%,   rgb(43 87 196 / 0.07) 0%, transparent 60%),
+    radial-gradient(60% 60% at 95% 100%, rgb(201 169 97 / 0.08) 0%, transparent 60%),
+    #ffffff;
 }
 
-/* Image mat — stays light in both themes so stones read true. */
+/* Light neutral mat behind stone photographs, so colour reads true. */
 .gem-mat { background: var(--mat-bg); }
 
 .link-underline {

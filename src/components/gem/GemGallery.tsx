@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { altFor, blurFor, imagePath } from '@/lib/catalog';
 import type { Gem } from '@/lib/types';
 
@@ -10,6 +11,11 @@ import type { Gem } from '@/lib/types';
  *
  * Accessibility contract (design-system.md §7): focus is trapped inside the
  * lightbox while open, Escape closes it, and focus returns to the trigger.
+ *
+ * The lightbox is portalled to <body>. On desktop the gallery column is
+ * `position: sticky`, which creates its own stacking context — rendered in
+ * place, no z-index could lift the lightbox above the site header, and the
+ * header covered its close button.
  */
 export function GemGallery({ gem }: { gem: Gem }) {
   const [active, setActive] = useState(0);
@@ -96,7 +102,7 @@ export function GemGallery({ gem }: { gem: Gem }) {
           priority
           className="object-cover transition-transform duration-[600ms] ease-[var(--ease-brand)] motion-safe:group-hover:scale-[1.03]"
         />
-        <span className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-abyss/70 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-[color:var(--page-fg)] shadow-[var(--shadow-1)] opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2M11 8v6M8 11h6" />
           </svg>
@@ -114,7 +120,7 @@ export function GemGallery({ gem }: { gem: Gem }) {
                 aria-label={`View photograph ${i + 1} of ${gem.code}`}
                 aria-current={i === active ? 'true' : undefined}
                 className={`gem-mat relative block h-20 w-20 overflow-hidden rounded-[var(--r-sm)] ring-offset-2 ring-offset-[color:var(--page-bg)] transition-shadow duration-200 sm:h-24 sm:w-24 ${
-                  i === active ? 'ring-2 ring-royal dark:ring-cornflower' : 'ring-1 ring-[color:var(--panel-line)] hover:ring-royal/50'
+                  i === active ? 'ring-2 ring-royal' : 'ring-1 ring-[color:var(--panel-line)] hover:ring-royal/50'
                 }`}
               >
                 <Image
@@ -132,22 +138,22 @@ export function GemGallery({ gem }: { gem: Gem }) {
         </ul>
       ) : null}
 
-      {zoomed ? (
+      {zoomed ? createPortal(
         <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label={`Photographs of ${gem.code}`}
-          className="fixed inset-0 z-[100] flex flex-col bg-abyss/96 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex flex-col bg-white"
         >
-          <div className="flex items-center justify-between px-5 py-4 text-white sm:px-8">
+          <div className="flex items-center justify-between border-b border-[color:var(--panel-line)] px-5 py-4 text-[color:var(--page-fg)] sm:px-8">
             <p className="t-num text-sm tracking-wide">
               {gem.code} — {active + 1} / {count}
             </p>
             <button
               type="button"
               onClick={close}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[color:var(--muted-fg)] hover:bg-[color:var(--color-sunken)] hover:text-[color:var(--page-fg)]"
               aria-label="Close enlarged view"
             >
               <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -156,7 +162,7 @@ export function GemGallery({ gem }: { gem: Gem }) {
             </button>
           </div>
 
-          <div className="relative flex-1 px-4 pb-6 sm:px-10">
+          <div className="relative flex-1 px-4 py-6 sm:px-10">
             <Image
               src={imagePath(activeSrc)}
               alt={altFor(gem, active)}
@@ -168,15 +174,16 @@ export function GemGallery({ gem }: { gem: Gem }) {
 
           {count > 1 ? (
             <div className="flex items-center justify-center gap-3 pb-8">
-              <button type="button" onClick={prev} aria-label="Previous photograph" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white hover:bg-white/10">
+              <button type="button" onClick={prev} aria-label="Previous photograph" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[color:var(--panel-line)] text-[color:var(--page-fg)] hover:border-royal hover:text-royal">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
               </button>
-              <button type="button" onClick={next} aria-label="Next photograph" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white hover:bg-white/10">
+              <button type="button" onClick={next} aria-label="Next photograph" className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[color:var(--panel-line)] text-[color:var(--page-fg)] hover:border-royal hover:text-royal">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
               </button>
             </div>
           ) : null}
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </div>
   );

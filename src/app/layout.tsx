@@ -43,10 +43,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FBFAF7' },
-    { media: '(prefers-color-scheme: dark)', color: '#060C1F' },
-  ],
+  // White in every mode: the site no longer follows the device's dark setting.
+  themeColor: '#FFFFFF',
+  colorScheme: 'light',
   width: 'device-width',
   initialScale: 1,
 };

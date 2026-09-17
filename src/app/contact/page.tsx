@@ -41,12 +41,12 @@ export default function ContactPage() {
               <h2 className="t-title mb-3">Reach us directly</h2>
               <ul className="space-y-2.5 text-[0.9375rem]">
                 <li>
-                  <a href={`mailto:${SITE.email}`} className="link-underline text-royal dark:text-cornflower">
+                  <a href={`mailto:${SITE.email}`} className="link-underline text-royal">
                     {SITE.email}
                   </a>
                 </li>
                 <li>
-                  <a href={`tel:${SITE.phoneE164}`} className="link-underline text-royal dark:text-cornflower">
+                  <a href={`tel:${SITE.phoneE164}`} className="link-underline text-royal">
                     {SITE.phoneDisplay}
                   </a>
                 </li>
@@ -54,7 +54,7 @@ export default function ContactPage() {
                   <a
                     href={`https://wa.me/${SITE.whatsapp}`}
                     rel="noopener noreferrer"
-                    className="link-underline text-royal dark:text-cornflower"
+                    className="link-underline text-royal"
                   >
                     WhatsApp
                   </a>

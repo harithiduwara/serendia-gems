@@ -41,7 +41,7 @@ export function Prose({ children }: { children: ReactNode }) {
         [&>ol]:mb-6 [&>ol]:space-y-2.5 [&>ol]:pl-5 [&>ol]:list-decimal [&>ol]:marker:text-gold
         [&_li]:text-[1.0625rem] [&_li]:leading-[1.72] [&_li]:text-[color:var(--muted-fg)]
         [&_strong]:font-semibold [&_strong]:text-[color:var(--page-fg)]
-        [&_a]:text-royal [&_a]:underline [&_a]:underline-offset-[0.22em] dark:[&_a]:text-cornflower
+        [&_a]:text-royal [&_a]:underline [&_a]:underline-offset-[0.22em]
       "
     >
       {children}

@@ -62,7 +62,7 @@ Run against `next start` on the production build.
 | M-02 | Collection grid renders 24 cards, images load | Pass |
 | M-03 | PDP (HR16, HR19) — gallery, price, CTAs, highlights, spec table | Pass |
 | M-04 | Light theme (primary) | Pass |
-| M-05 | Dark theme — image mats stay light per design principle §1 | Pass |
+| M-05 | ~~Dark theme — image mats stay light~~ — superseded 2026-09-17: dark mode removed; site verified white under dark-mode device emulation (design-system §8) | Pass |
 | M-06 | Mobile 375 px — single column, gallery, thumbnail rail, scaled type | Pass |
 | M-07 | Filter click → URL `?treatment=natural`, 9 results, correct lots | Pass |
 | M-08 | Live region announces "9 stones matching 1 filter" | Pass |

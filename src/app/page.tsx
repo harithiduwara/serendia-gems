@@ -27,15 +27,15 @@ export default function HomePage() {
   return (
     <>
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="sapphire-ground on-dark relative -mt-[4.5rem] overflow-hidden pt-[4.5rem]">
+      <section className="hero-wash relative overflow-hidden border-b border-[color:var(--panel-line)]">
         <Container>
           <div className="grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr] lg:py-32">
             <div>
-              <p className="t-eyebrow mb-5 text-gold-bright">Est. Ratnapura, Sri Lanka</p>
-              <h1 className="t-display-1 text-white">
+              <p className="t-eyebrow mb-5 text-gold">Est. Ratnapura, Sri Lanka</p>
+              <h1 className="t-display-1 text-royal-deep">
                 Ceylon sapphires,
                 <br />
-                <em className="font-normal not-italic text-transparent bg-clip-text bg-gradient-to-r from-cornflower via-mist to-gold-bright">
+                <em className="font-normal not-italic text-transparent bg-clip-text bg-gradient-to-r from-royal via-royal-bright to-gold">
                   one stone at a time
                 </em>
               </h1>
@@ -46,19 +46,15 @@ export default function HomePage() {
               </p>
 
               <div className="mt-9 flex flex-wrap gap-3">
-                <ButtonLink href="/collection" variant="gold" size="lg">
+                <ButtonLink href="/collection" size="lg">
                   View the collection
                 </ButtonLink>
-                <ButtonLink
-                  href="/guide/buying-guide"
-                  size="lg"
-                  className="border border-white/25 bg-transparent text-white hover:bg-white/10"
-                >
+                <ButtonLink href="/guide/buying-guide" variant="secondary" size="lg">
                   How to buy a sapphire
                 </ButtonLink>
               </div>
 
-              <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-white/12 pt-7">
+              <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-[color:var(--panel-line)] pt-7">
                 <Stat value={String(all.length)} label="Stones in stock" />
                 <Stat value={String(unheatedCount)} label="Never heated" />
                 <Stat value="100%" label="Treatment disclosed" />
@@ -72,7 +68,7 @@ export default function HomePage() {
                   className="group block"
                   aria-label={`View lot ${hero.code}, the ${formatCarats(hero.carats)} royal blue cushion`}
                 >
-                  <div className="gem-mat relative aspect-[4/5] overflow-hidden rounded-[var(--r-lg)] shadow-[var(--shadow-3)]">
+                  <div className="gem-mat relative aspect-[4/5] overflow-hidden rounded-[var(--r-lg)] border border-[color:var(--panel-line)] shadow-[var(--shadow-2)]">
                     <Image
                       src={imagePath(heroImg)}
                       alt={altFor(hero, 0)}
@@ -86,15 +82,15 @@ export default function HomePage() {
                   </div>
                   <div className="mt-5 flex items-end justify-between gap-4">
                     <div>
-                      <p className="t-eyebrow mb-1.5 text-gold-bright">The house stone</p>
-                      <p className="t-title text-white">
+                      <p className="t-eyebrow mb-1.5 text-gold">The house stone</p>
+                      <p className="t-title">
                         {hero.code} — {formatCarats(hero.carats)} {hero.shape}
                       </p>
                       <p className="mt-1 text-sm text-[color:var(--muted-fg)]">
                         Deepest, most saturated blue in the collection
                       </p>
                     </div>
-                    <p className="t-num shrink-0 font-display text-2xl text-gold-bright">
+                    <p className="t-num shrink-0 font-display text-2xl text-royal">
                       {formatUSD(hero.priceUSD)}
                     </p>
                   </div>
@@ -138,7 +134,7 @@ export default function HomePage() {
               title="Stones worth your attention"
               lead="Photographed in daylight and under the loupe, described as they actually are — including where the colour is soft rather than strong."
             />
-            <Link href="/collection" className="link-underline shrink-0 text-sm font-medium text-royal dark:text-cornflower">
+            <Link href="/collection" className="link-underline shrink-0 text-sm font-medium text-royal">
               All {all.length} stones →
             </Link>
           </div>
@@ -210,7 +206,7 @@ export default function HomePage() {
                 >
                   <h3 className="t-title mb-2.5">{g.label}</h3>
                   <p className="flex-1 text-[0.875rem] leading-relaxed text-[color:var(--muted-fg)]">{g.blurb}</p>
-                  <span className="mt-5 text-sm font-medium text-royal dark:text-cornflower">Read →</span>
+                  <span className="mt-5 text-sm font-medium text-royal">Read →</span>
                 </Link>
               </li>
             ))}
@@ -219,19 +215,19 @@ export default function HomePage() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────────────────────── */}
-      <section className="sapphire-ground on-dark">
-        <Container width="prose">
-          <div className="py-20 text-center sm:py-24">
-            <p className="t-eyebrow mb-4 text-gold-bright">Not sure where to start?</p>
-            <h2 className="t-display-2 text-white">Tell us what you are looking for</h2>
+      <section className="pb-4">
+        <Container>
+          <div className="rounded-[var(--r-lg)] border border-royal/10 bg-mist/35 px-6 py-16 text-center sm:py-20">
+            <p className="t-eyebrow mb-4 text-gold">Not sure where to start?</p>
+            <h2 className="t-display-2 text-royal-deep">Tell us what you are looking for</h2>
             <p className="t-lead mx-auto mt-5 max-w-xl">
               Describe the colour, the size and the budget you have in mind. If the right stone is
               in this collection we will point you to it. If it is not, we will say so — and look
               for it on the island.
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
-              <ButtonLink href="/contact" variant="gold" size="lg">Start an enquiry</ButtonLink>
-              <ButtonLink href="/collection" size="lg" className="border border-white/25 bg-transparent text-white hover:bg-white/10">
+              <ButtonLink href="/contact" size="lg">Start an enquiry</ButtonLink>
+              <ButtonLink href="/collection" variant="secondary" size="lg">
                 Browse everything
               </ButtonLink>
             </div>
@@ -247,7 +243,7 @@ function Stat({ value, label }: { value: string; label: string }) {
     <div>
       <dt className="sr-only">{label}</dt>
       <dd>
-        <span className="t-num block font-display text-3xl font-medium text-gold-bright">{value}</span>
+        <span className="t-num block font-display text-3xl font-medium text-royal">{value}</span>
         <span className="mt-1 block text-xs text-[color:var(--muted-fg)]">{label}</span>
       </dd>
     </div>

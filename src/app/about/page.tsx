@@ -17,11 +17,11 @@ export default function AboutPage() {
 
   return (
     <>
-      <section className="sapphire-ground on-dark">
+      <section className="hero-wash border-b border-[color:var(--panel-line)]">
         <Container width="prose">
           <div className="py-20 sm:py-28">
-            <p className="t-eyebrow mb-4 text-gold-bright">Our house</p>
-            <h1 className="t-display-2 text-white">
+            <p className="t-eyebrow mb-4 text-gold">Our house</p>
+            <h1 className="t-display-2 text-royal-deep">
               A small house, in the city the gems come from
             </h1>
             <p className="t-lead mt-6 !text-[1.0625rem]">
@@ -60,7 +60,7 @@ export default function AboutPage() {
               { v: `${photographed}/${gems.length}`, l: 'Photographed in studio' },
             ].map((s) => (
               <div key={s.l} className="rounded-[var(--r-md)] border border-[color:var(--panel-line)] p-6 text-center">
-                <p className="t-num font-display text-4xl font-medium text-royal dark:text-cornflower">{s.v}</p>
+                <p className="t-num font-display text-4xl font-medium text-royal">{s.v}</p>
                 <p className="mt-1.5 text-[0.8125rem] text-[color:var(--muted-fg)]">{s.l}</p>
               </div>
             ))}

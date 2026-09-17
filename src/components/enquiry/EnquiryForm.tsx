@@ -185,11 +185,11 @@ export function EnquiryForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-5">
       {subjectCodes.length > 0 ? (
-        <div className="rounded-[var(--r-md)] border border-royal/20 bg-mist/50 p-4 dark:bg-royal/15">
+        <div className="rounded-[var(--r-md)] border border-royal/20 bg-mist/50 p-4">
           <p className="text-[0.8125rem] font-medium">
             {subjectCodes.length === 1 ? 'Enquiring about lot' : 'Enquiring about lots'}
           </p>
-          <p className="t-num mt-1 text-sm text-royal dark:text-cornflower">
+          <p className="t-num mt-1 text-sm text-royal">
             {subjectCodes.join(', ')}
           </p>
         </div>

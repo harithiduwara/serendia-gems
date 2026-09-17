@@ -29,7 +29,7 @@ export function GemCard({ gem, priority = false }: { gem: Gem; priority?: boolea
           )}
 
           {gem.status !== 'available' ? (
-            <div className="absolute inset-x-0 bottom-0 bg-abyss/85 px-3 py-2 text-center text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-white">
+            <div className="absolute inset-x-0 bottom-0 border-t border-[color:var(--panel-line)] bg-white/95 px-3 py-2 text-center text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--page-fg)]">
               {gem.status === 'reserved' ? 'Reserved' : 'Sold'}
             </div>
           ) : null}
@@ -68,7 +68,7 @@ export function GemCard({ gem, priority = false }: { gem: Gem; priority?: boolea
             <p className="t-num text-[0.8125rem] text-[color:var(--muted-fg)]">
               {formatCarats(gem.carats)} · {gem.shape}
             </p>
-            <p className="t-num font-display text-[1.25rem] font-medium text-royal dark:text-cornflower">
+            <p className="t-num font-display text-[1.25rem] font-medium text-royal">
               {formatUSD(gem.priceUSD)}
             </p>
           </div>

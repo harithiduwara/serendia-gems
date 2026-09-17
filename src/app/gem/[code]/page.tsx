@@ -75,14 +75,14 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="py-6">
           <ol className="flex flex-wrap items-center gap-2 text-[0.8125rem] text-[color:var(--muted-fg)]">
-            <li><Link href="/" className="hover:text-royal dark:hover:text-cornflower">Home</Link></li>
+            <li><Link href="/" className="hover:text-royal">Home</Link></li>
             <li aria-hidden="true">/</li>
-            <li><Link href="/collection" className="hover:text-royal dark:hover:text-cornflower">Collection</Link></li>
+            <li><Link href="/collection" className="hover:text-royal">Collection</Link></li>
             <li aria-hidden="true">/</li>
             <li>
               <Link
                 href={`/collection?variety=${encodeURIComponent(gem.variety)}`}
-                className="hover:text-royal dark:hover:text-cornflower"
+                className="hover:text-royal"
               >
                 {gem.variety}
               </Link>
@@ -123,7 +123,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
             {/* Price */}
             <div className="mt-8 border-y border-[color:var(--panel-line)] py-6">
               <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <p className="t-num font-display text-[2.5rem] leading-none font-medium text-royal dark:text-cornflower">
+                <p className="t-num font-display text-[2.5rem] leading-none font-medium text-royal">
                   {formatUSD(gem.priceUSD)}
                 </p>
                 <p className="t-num text-sm text-[color:var(--muted-fg)]">
@@ -207,7 +207,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
                   reached good colour without any human intervention is simply rarer, and the trade
                   prices that rarity. It is not a quality judgement — many heated stones are more
                   beautiful. It is a scarcity one.{' '}
-                  <Link href="/guide/heat-treatment" className="link-underline font-medium text-royal dark:text-cornflower">
+                  <Link href="/guide/heat-treatment" className="link-underline font-medium text-royal">
                     Read the full explanation
                   </Link>
                   .
@@ -220,7 +220,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
                   This stone has been heated — the standard, permanent and universally disclosed
                   process applied to most sapphire in circulation. It is stable, requires no special
                   care, and is what makes a stone of this size and colour attainable.{' '}
-                  <Link href="/guide/heat-treatment" className="link-underline font-medium text-royal dark:text-cornflower">
+                  <Link href="/guide/heat-treatment" className="link-underline font-medium text-royal">
                     What heating actually does
                   </Link>
                   .
