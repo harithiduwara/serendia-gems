@@ -15,7 +15,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.9'
+          # Same file Cloudflare's build reads, so CI tests the runtime that deploys.
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -27,7 +28,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      # 66 unit tests, including the data-integrity and copy-provenance rules
+      # Unit tests, including the data-integrity and copy-provenance rules
       # that guard the catalogue (docs/04-test-plan.md §2.1).
       - name: Unit tests
         run: npm test
@@ -40,7 +41,7 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
-      # 52 HTTP checks against the built artefact: routes, structured data,
+      # HTTP checks against the built artefact: routes, structured data,
       # security headers, the enquiry API and its rate limiting.
       - name: Smoke suite
         run: |
@@ -50,3 +51,40 @@ jobs:
             sleep 1
           done
           npm run smoke
+
+  cloudflare:
+    name: Cloudflare build under the Workers runtime
+    runs-on: ubuntu-latest
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Exactly the command Cloudflare runs in production — including its own
+      # unit-test gate and output checks.
+      - name: Build for Cloudflare
+        run: npm run build:cloudflare
+
+      # Validates wrangler.jsonc against the schema without needing an account.
+      - name: Validate Wrangler config
+        run: npx wrangler deploy --dry-run
+
+      # Serves ./out with workerd — Cloudflare's actual runtime — so routing,
+      # trailing-slash redirects, the 404 page and the _headers rules are all
+      # tested the way production applies them, not approximated.
+      - name: Smoke suite under workerd
+        run: |
+          npx wrangler dev --port 8787 --ip 127.0.0.1 > wrangler.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://127.0.0.1:8787/ && break
+            sleep 1
+          done
+          npm run smoke:cloudflare || { echo '--- wrangler log ---'; cat wrangler.log; exit 1; }

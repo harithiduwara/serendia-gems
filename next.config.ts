@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import securityHeaders from './config/security-headers.json';
 
 /**
  * Two build modes.
@@ -7,9 +8,10 @@ import type { NextConfig } from 'next';
  *                      on demand (AVIF/WebP), security headers are sent.
  *                      This is what Vercel or any Node host should run.
  *
- *   STATIC_EXPORT=1    Fully static export for GitHub Pages. No server, so the
- *                      enquiry API is dropped and image optimisation is replaced
- *                      by pre-generated variants (see src/lib/image-loader.ts).
+ *   STATIC_EXPORT=1    Fully static export — GitHub Pages, and Cloudflare via
+ *                      scripts/build-cloudflare.mjs. No server, so the enquiry
+ *                      API is dropped and image optimisation is replaced by
+ *                      pre-generated variants (see src/lib/image-loader.ts).
  *
  * The static mode is deliberately an opt-in flag rather than a rewrite, so
  * moving to a Node host later is a change of build command, not a migration.
@@ -23,14 +25,11 @@ const isStaticExport = process.env.STATIC_EXPORT === '1';
  */
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-const securityHeaders = [
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
-  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-  { key: 'X-DNS-Prefetch-Control', value: 'on' },
-];
+/*
+ * Security headers live in config/security-headers.json so the two places that
+ * send them — Next's own server here, and Cloudflare's `_headers` file written
+ * by scripts/build-cloudflare.mjs — read one list and cannot drift apart.
+ */
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

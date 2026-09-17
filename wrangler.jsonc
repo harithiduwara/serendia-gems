@@ -1,0 +1,41 @@
+/**
+ * Cloudflare deployment for serendiagems.com.
+ *
+ * A Worker with STATIC ASSETS ONLY — there is no `main` script, so nothing runs
+ * per request. Cloudflare serves the files in ./out from its edge, which is why
+ * this needs no server, and why asset requests are not billed as invocations.
+ *
+ * ./out is produced by `npm run build:cloudflare`. Settings are explained in
+ * docs/07-cloudflare.md; the ones that are easy to get wrong are noted inline.
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Must match the Worker name you give this project in the Cloudflare
+  // dashboard. A mismatch makes Workers Builds refuse to deploy.
+  "name": "serendia-gems",
+
+  "compatibility_date": "2026-09-16",
+
+  "assets": {
+    "directory": "./out",
+
+    // The export uses trailingSlash: true, so pages exist as /gem/HR16/index.html.
+    // This serves them at /gem/HR16/ and redirects /gem/HR16 there — matching the
+    // canonical URLs byte-for-byte.
+    "html_handling": "auto-trailing-slash",
+
+    // Unknown paths get the branded 404.html with a real 404 status, instead of
+    // a blank Cloudflare error or — worse — the home page with a 200.
+    "not_found_handling": "404-page"
+  },
+
+  // Keeps a serendia-gems.<account>.workers.dev URL, so the first deploy gives
+  // you something to open before the domain is attached. It does not compete
+  // with serendiagems.com in search: every page's canonical tag names the real
+  // domain. Set to false once the domain is live if you want only one address.
+  "workers_dev": true,
+
+  // No per-branch preview copies — this site deploys from main only.
+  "preview_urls": false
+}

@@ -1,5 +1,7 @@
 # GitHub Pages Hosting — Trade-offs and Mitigations
 
+> **Interim host.** Production moves to Cloudflare on serendiagems.com — see [`07-cloudflare.md`](07-cloudflare.md). Retire this deployment once that is verified (§4 there), so two copies of the site do not compete in search.
+
 Version 1.0 · 2026-09-08 · Supplement to `05-deployment-runbook.md`
 
 ---

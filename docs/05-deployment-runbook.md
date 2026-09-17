@@ -11,10 +11,11 @@ Version 1.0 · 2026-09-08
 | # | Item | Where | Why it blocks |
 |---|---|---|---|
 | ~~B-01a~~ | ~~Replace phone and WhatsApp number~~ | `src/lib/site.ts` | **Done 2026-09-09** — real number `+94 77 880 0467` in all three forms, guarded by `tests/site.test.ts`. |
-| B-01b | Replace `email` and `address.street` | `src/lib/site.ts`, both marked with a warning comment | Still illustrative. `enquiries@serendiagems.com` does not resolve until the domain's mail is configured, so enquiry replies would bounce. |
-| B-02 | Point `NEXT_PUBLIC_SITE_URL` at the real origin | Hosting environment variables | Canonical URLs, the sitemap and OG tags all derive from it. Wrong value = wrong canonicals = SEO damage. |
+| B-01b | Make `enquiries@serendiagems.com` receive mail | Cloudflare → Email Routing (`docs/07-cloudflare.md` §2.3) | The static enquiry form sends to this address. Until Email Routing forwards it to a real inbox, **every enquiry bounces**. |
+| B-01c | Replace `address.street` | `src/lib/site.ts`, marked with a warning comment | Still illustrative, and shown on the contact page and in structured data. |
+| ~~B-02~~ | ~~Point `NEXT_PUBLIC_SITE_URL` at the real origin~~ | `scripts/build-cloudflare.mjs` | **Done 2026-09-17** — the Cloudflare build forces `https://serendiagems.com` and fails if the sitemap names any other origin. |
 | B-03 | Confirm the return window and shipping terms are the merchant's actual policy | `src/app/terms/page.tsx` | The site currently promises a seven-day return. If that is not the policy, it is a false statement of terms. |
-| B-04 | Wire enquiry delivery, or confirm console logging is acceptable | `src/app/api/enquiry/route.ts` §6 | Otherwise enquiries land only in server logs and will be missed. |
+| B-04 | *Node host only:* wire enquiry delivery | `src/app/api/enquiry/route.ts` §6 | Does not apply on Cloudflare, where the form composes an email instead (see B-01b). Applies only if the full server build is deployed. |
 | B-05 | Add `/public/og-default.png` (1200×630) | `public/` | Social shares of the home page currently reference a missing image. |
 | B-06 | Verify prices are current | `src/data/inventory.ts` | Transcribed from the January 2026 sheet. |
 
@@ -32,7 +33,9 @@ Template in `.env.example`. Nothing secret is referenced from client code.
 
 ## 3. Recommended hosting
 
-**Vercel** is the natural fit: it is the reference platform for Next.js, serves the `next/image` optimiser at the edge, and gives immutable atomic deploys with instant rollback. Netlify or Cloudflare Pages with the Next adapter both work. A self-hosted Node server also works (`npm run build && npm start`) but you then own the image cache and the CDN.
+**Production is Cloudflare** — a Worker serving the static export on serendiagems.com, with no server. Setup, verification and day-to-day operation are in [`07-cloudflare.md`](07-cloudflare.md); the rest of this section applies only if the full server build is ever needed.
+
+**If a server becomes necessary** (for example a server-side enquiry endpoint with rate limiting), **Vercel** is the natural fit: it is the reference platform for Next.js, serves the `next/image` optimiser at the edge, and gives immutable atomic deploys with instant rollback. A self-hosted Node server also works (`npm run build && npm start`) but you then own the image cache and the CDN.
 
 ### First deploy
 
@@ -41,7 +44,7 @@ npm ci
 npm run verify          # typecheck + tests + build — must be clean
 ```
 
-Then connect the repository, set `NEXT_PUBLIC_SITE_URL`, and deploy. Build command `npm run build`, output directory `.next`, Node 20.9+.
+Then connect the repository, set `NEXT_PUBLIC_SITE_URL`, and deploy. Build command `npm run build`, output directory `.next`, Node 22 (`.nvmrc`).
 
 ### Post-deploy verification
 

@@ -12,13 +12,17 @@
 const BASE = (process.env.SMOKE_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 
 /**
- * `--static` verifies a GitHub Pages export. Two families of check are dropped
- * because a static host genuinely cannot satisfy them, not because they are
- * inconvenient: the enquiry API (no server) and custom security headers
- * (GitHub Pages sets its own). Both are recorded as accepted trade-offs in
- * docs/06-github-pages.md.
+ * `--static` verifies a static export. The enquiry API checks are dropped
+ * because a static host genuinely has no server to answer them.
+ *
+ * `--headers` restores the security-header checks in static mode. GitHub Pages
+ * cannot send custom headers, so they are skipped there; Cloudflare can, via
+ * the `_headers` file, so its verification passes both flags
+ * (`npm run smoke:cloudflare`). Trade-offs: docs/06-github-pages.md and
+ * docs/07-cloudflare.md.
  */
 const STATIC = process.argv.includes('--static');
+const EXPECT_HEADERS = !STATIC || process.argv.includes('--headers');
 
 /**
  * The origin the build was CONFIGURED with, which is not always where it is
@@ -174,19 +178,43 @@ const run = async () => {
 
   // ── Security headers ─────────────────────────────────────────────────────
   console.log('\nSecurity headers');
-  if (STATIC) {
-    console.log('  \x1b[33m–\x1b[0m skipped: GitHub Pages sets its own headers (see docs/06-github-pages.md)');
+  if (!EXPECT_HEADERS) {
+    console.log('  \x1b[33m–\x1b[0m skipped: this host cannot send custom headers (pass --headers if it can)');
   } else {
-    const { res } = await get('/');
-    for (const [h, expected] of [
-      ['x-content-type-options', 'nosniff'],
-      ['x-frame-options', 'DENY'],
-      ['referrer-policy', 'strict-origin-when-cross-origin'],
-    ]) {
-      check(`${h}: ${expected}`, res.headers.get(h) === expected, `got ${res.headers.get(h)}`);
+    // A lot page as well as the home page: header rules are path-matched, and a
+    // rule that only covered `/` would pass a home-page-only check.
+    for (const path of ['/', '/gem/HR16']) {
+      const { res } = await get(path);
+      for (const [h, expected] of [
+        ['x-content-type-options', 'nosniff'],
+        ['x-frame-options', 'DENY'],
+        ['referrer-policy', 'strict-origin-when-cross-origin'],
+      ]) {
+        check(`${path} ${h}: ${expected}`, res.headers.get(h) === expected, `got ${res.headers.get(h)}`);
+      }
+      check(`${path} permissions-policy set`, Boolean(res.headers.get('permissions-policy')));
+      check(`${path} strict-transport-security set`, Boolean(res.headers.get('strict-transport-security')));
+      check(`${path} x-powered-by suppressed`, !res.headers.get('x-powered-by'));
     }
-    check('permissions-policy set', Boolean(res.headers.get('permissions-policy')));
-    check('x-powered-by suppressed', !res.headers.get('x-powered-by'));
+
+    if (STATIC) {
+      // Next fingerprints /_next/static, so those files must be cached as
+      // immutable — otherwise every visit revalidates every script.
+      const { body } = await get('/');
+      const chunk = body.match(/\/_next\/static\/[^"']+\.js/)?.[0];
+      if (chunk) {
+        const r = await fetch(`${BASE}${chunk}`);
+        const cc = r.headers.get('cache-control') ?? '';
+        check('fingerprinted /_next/static assets cached as immutable', cc.includes('immutable'), `got "${cc}"`);
+      } else {
+        check('fingerprinted /_next/static assets cached as immutable', false, 'no chunk URL found on home page');
+      }
+
+      // The header rules are configuration, not content.
+      const leaked = await fetch(`${BASE}/_headers`);
+      const leakedBody = leaked.ok ? await leaked.text() : '';
+      check('_headers config is not served as a page', !leakedBody.includes('X-Frame-Options'), `HTTP ${leaked.status}`);
+    }
   }
 
   // ── Enquiry endpoint ─────────────────────────────────────────────────────

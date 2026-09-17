@@ -102,14 +102,30 @@ to a number that does not exist.
 Two build modes. The static one is an opt-in flag, not a rewrite, so moving between
 them is a change of build command rather than a migration.
 
-| Mode | Command | Target | Enquiry API | Images |
-|---|---|---|---|---|
-| Full | `npm run build` | Vercel / any Node host | Server endpoint | AVIF/WebP on demand |
-| Static | `npm run build:static` | GitHub Pages | Mail-client fallback | Pre-generated JPEG variants |
+| Mode | Command | Target | Enquiry API | Images | Security headers |
+|---|---|---|---|---|---|
+| Full | `npm run build` | Vercel / any Node host | Server endpoint | AVIF/WebP on demand | Yes |
+| Cloudflare | `npm run build:cloudflare` | **serendiagems.com** (production) | Mail-client fallback | Pre-generated JPEG variants | Yes, via `_headers` |
+| Static | `npm run build:static` | GitHub Pages (interim) | Mail-client fallback | Pre-generated JPEG variants | No |
 
-### Currently live on GitHub Pages
+### Production: Cloudflare
 
-`.github/workflows/pages.yml` builds and publishes on every push to `main`.
+A Worker serving static assets — no server, free plan. Cloudflare builds and deploys
+on every push to `main` once the repository is connected. One-time dashboard setup
+(repository, domain, and **Email Routing, without which enquiries bounce**) is in
+[`docs/07-cloudflare.md`](docs/07-cloudflare.md).
+
+```bash
+npm run preview:cloudflare                                          # local, Cloudflare's runtime (Node 22+)
+npm run smoke:cloudflare                                            # 64 checks against the preview
+SMOKE_BASE_URL=https://serendiagems.com npm run smoke:cloudflare    # against production
+```
+
+### Interim: GitHub Pages
+
+`.github/workflows/pages.yml` builds and publishes on every push to `main`. Retire it
+once serendiagems.com is verified — a second public copy competes with the real domain
+in search (`docs/07-cloudflare.md` §4).
 The trade-offs — a lost API endpoint, JPEG instead of AVIF, and **no custom security
 headers** — are documented in full, with mitigations, in
 [`docs/06-github-pages.md`](docs/06-github-pages.md). Read it before assuming the

@@ -2,7 +2,7 @@
   "name": "serendia-gems",
   "version": "1.0.0",
   "private": true,
-  "description": "SerendiaGems.com \u2014 Ceylon sapphire atelier. Enterprise storefront.",
+  "description": "SerendiaGems.com — Ceylon sapphire atelier. Enterprise storefront.",
   "engines": {
     "node": ">=20.9.0"
   },
@@ -17,7 +17,10 @@
     "smoke": "node scripts/smoke.mjs",
     "verify": "npm run typecheck && npm run test && npm run build",
     "build:static": "node scripts/prepare-static.mjs && STATIC_EXPORT=1 next build",
-    "smoke:static": "node scripts/smoke.mjs --static"
+    "smoke:static": "node scripts/smoke.mjs --static",
+    "build:cloudflare": "node scripts/build-cloudflare.mjs",
+    "preview:cloudflare": "npm run build:cloudflare && wrangler dev",
+    "smoke:cloudflare": "SMOKE_BASE_URL=${SMOKE_BASE_URL:-http://localhost:8787} SMOKE_SITE_URL=https://serendiagems.com node scripts/smoke.mjs --static --headers"
   },
   "dependencies": {
     "next": "15.5.25",
@@ -35,6 +38,7 @@
     "postcss": "^8.5.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.2"
+    "vitest": "^3.0.2",
+    "wrangler": "^4.133.0"
   }
 }
