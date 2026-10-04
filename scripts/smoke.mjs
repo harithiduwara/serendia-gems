@@ -227,19 +227,23 @@ const run = async () => {
 
     // The form itself sits behind a Suspense boundary and hydrates client-side,
     // so its copy is in the route chunk rather than the HTML. Fetch the chunks
-    // the page references and assert the mail-client fallback actually shipped —
+    // the page references and assert BOTH hand-off channels actually shipped —
     // a broken enquiry path is the worst failure this site could have.
     const scripts = [...body.matchAll(/src="([^"]*\/_next\/static\/chunks\/[^"]*\.js)"/g)].map((m) => m[1]);
-    let found = false;
+    let whatsapp = false;
+    let email = false;
     for (const src of scripts) {
-      const url = src.startsWith('http') ? src : `${BASE.replace(/\/[^/]*$/, '')}${src}`;
       try {
         const r = await fetch(src.startsWith('http') ? src : new URL(src, BASE + '/').toString());
-        if (r.ok && (await r.text()).includes('Compose enquiry email')) { found = true; break; }
+        if (!r.ok) continue;
+        const text = await r.text();
+        if (text.includes('Send on WhatsApp')) whatsapp = true;
+        if (text.includes('Send as email instead')) email = true;
+        if (whatsapp && email) break;
       } catch { /* try the next chunk */ }
-      void url;
     }
-    check('enquiry form ships the mail-client fallback', found, `checked ${scripts.length} chunks`);
+    check('enquiry form ships the WhatsApp hand-off', whatsapp, `checked ${scripts.length} chunks`);
+    check('enquiry form ships the email alternative', email, `checked ${scripts.length} chunks`);
   } else {
   const post = (payload) =>
     fetch(`${BASE}/api/enquiry`, {
