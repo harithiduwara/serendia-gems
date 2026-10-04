@@ -68,7 +68,7 @@ export function StickyGemActions({ gem }: { gem: Gem }) {
         // Hidden from assistive tech: it duplicates controls already in the
         // document, and announcing them twice would be noise.
         aria-hidden="true"
-        className={`fixed inset-x-0 bottom-0 z-[110] border-t border-[color:var(--panel-line)] bg-[color:var(--panel-bg)]/95 px-4 py-3 shadow-[0_-4px_20px_rgb(15_23_41/0.08)] backdrop-blur-md transition-transform duration-300 ease-[var(--ease-brand)] lg:hidden ${
+        className={`no-print fixed inset-x-0 bottom-0 z-[110] border-t border-[color:var(--panel-line)] bg-[color:var(--panel-bg)]/95 px-4 py-3 shadow-[0_-4px_20px_rgb(15_23_41/0.08)] backdrop-blur-md transition-transform duration-300 ease-[var(--ease-brand)] lg:hidden ${
           shown ? 'translate-y-0' : 'translate-y-full'
         }`}
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}

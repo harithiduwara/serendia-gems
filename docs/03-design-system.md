@@ -263,3 +263,52 @@ The *decision* was extracted to `shouldRevealStickyBar()` in `src/lib/ui.ts` and
 is pinned by six unit tests. The remaining unverified surface is the listener
 plumbing, which is standard browser API. **This should be checked by hand on a
 real phone before launch.**
+
+### 9.9 Sharing a stone
+
+Buyers rarely decide alone — a stone is forwarded to a partner, a jeweller or a
+family member before anyone enquires. Previously that meant copying the address
+out of the browser bar, which on a phone is awkward enough that people screenshot
+the page instead, losing the price, the specification and the link back.
+
+Each stone page offers **WhatsApp**, **Copy link**, and the system share sheet
+where the browser provides one. WhatsApp is named explicitly rather than hidden
+behind the share sheet because it is how this market actually forwards things.
+
+The WhatsApp link is built from the canonical URL **on the server**, so it is a
+real link in the HTML that works before JavaScript loads. Copy and native share
+use the address actually being viewed, so a filtered or tracked URL is preserved.
+
+Copying tries the modern clipboard API, then falls back to a selected off-screen
+field. The modern API is refused more often than expected — it requires a secure
+context and a focused document — and it was in fact refused during verification.
+If both fail, the toast shows the address itself rather than telling the visitor
+to go and find it.
+
+### 9.10 Recently viewed
+
+The wishlist holds what someone deliberately saved. With 24 individual stones,
+people also compare by opening several and going back, so the collection page
+ends with the last three stones this browser opened. Stored locally, rendered
+only after mount, and never shown on a stone's own page for the stone itself.
+
+## 10. Print
+
+Trade buyers print a stone, or save it as a PDF, to take to a client or a setter.
+Default browser printing wastes the first page on navigation and drops the
+photograph, so a stone page is reshaped for paper rather than merely tolerated:
+
+- Header, footer, sticky bars, toasts and every control are removed (`.no-print`).
+- The canonical URL is printed under the title (`.print-only`). A sheet read away
+  from the browser otherwise has no way back to the stone.
+- Photographs and specification rows never split across a page.
+- The stone's mat and the gold rules are preserved with `print-color-adjust`,
+  because the mat is the neutral ground the colour is judged against.
+- The sticky gallery column is reset to static, which otherwise confuses
+  pagination.
+
+**Verified structurally, not visually.** The rules were evaluated against a live
+stone page: 10 elements drop out (header, footer, all controls) while the
+heading, price, specification table, photograph and printed address survive. The
+actual printed output has not been inspected — worth one Cmd-P before relying on
+it for a client.

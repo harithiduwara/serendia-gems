@@ -61,7 +61,7 @@ export function RouteProgress() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 top-0 z-[200] h-0.5"
+      className="no-print pointer-events-none fixed inset-x-0 top-0 z-[200] h-0.5"
       role="progressbar"
       aria-label="Loading page"
       aria-busy="true"

@@ -199,3 +199,32 @@ The decision was extracted to `shouldRevealStickyBar()` and pinned by six unit
 tests covering the threshold, viewport scaling, and the top-of-page case. The
 unverified remainder is the listener plumbing. **Check by hand on a real phone
 before launch** — it is the only part of this pass without end-to-end evidence.
+
+---
+
+## 10. Convenience features (2026-10-04)
+
+Added after the white theme, in response to "add more nice to have features".
+Design rationale is in `docs/03-design-system.md` §9.9–§10.
+
+| # | Feature | Why | Verified |
+|---|---|---|---|
+| F-01 | Favicon (`icon.svg`) and iOS icon (`apple-icon.png`) | Tabs and home screens showed a blank default. Closes a runbook recommendation. | Served 200; `<link rel="icon">` and `apple-touch-icon` emitted |
+| F-02 | Default social-share card (`og-default.jpg`) | Closes go-live blocker **B-05**. Links shared anywhere but a stone page had a missing image. | 1200×630, 123 KB, referenced by `og:image`, fetches 200 |
+| F-03 | Share a stone: WhatsApp, copy link, native share | Stones get forwarded before anyone enquires | Row renders; WhatsApp link present in HTML without JS; copy produced "Link copied" toast and announcement |
+| F-04 | Recently viewed stones | People compare by opening several and going back | Visiting HR16 → HR19 → HR25 recorded `["HR25","HR19","HR16"]`; rail rendered those three on the collection page |
+| F-05 | Print / Save-as-PDF stone sheet | Trade buyers take a stone to a client or setter | Print rules evaluated against a live page: 10 elements hidden, heading/price/specs/photo/address survive |
+
+### 10.1 Defects found while building these
+
+| ID | Severity | Defect | Fix |
+|---|---|---|---|
+| D-08 | Medium | **Copy link silently failed.** `navigator.clipboard.writeText` was refused (`NotAllowedError`) and the visitor was told to use the address bar. The modern clipboard API needs a secure context *and* a focused document, so this would fail for real users too, not only in the harness. | Added an off-screen-field `execCommand` fallback, and as a last resort the toast shows the URL itself. Re-verified: "Link copied". |
+| D-09 | Low | The social card was a 650 KB PNG. WhatsApp commonly drops preview images much over ~300 KB — the one channel that matters most here. | Switched to JPEG at quality 86: 123 KB, visually identical. The generator warns if it ever exceeds 300 KB. |
+| D-10 | Low | The iOS icon occupied ~40% of its canvas and sat off-centre, reading as a dot on a home screen. | Centred on the mark's own bounds at 72% of the canvas. |
+
+### 10.2 Not verified
+
+The **printed output** itself. The print rules are verified structurally (which
+elements survive, which drop out), but no physical or PDF print was inspected.
+One Cmd-P on a stone page before relying on it for a client.

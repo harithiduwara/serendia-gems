@@ -28,7 +28,7 @@ export function CompareBar({ gems }: { gems: Gem[] }) {
   if (selected.length < 2) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[120] px-3 pb-3 sm:px-5 sm:pb-5">
+    <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-[120] px-3 pb-3 sm:px-5 sm:pb-5">
       <div className="pointer-events-auto mx-auto flex max-w-[1200px] flex-wrap items-center gap-3 rounded-[var(--r-lg)] border border-[color:var(--panel-line)] bg-[color:var(--panel-bg)]/95 p-3 shadow-[var(--shadow-2)] backdrop-blur-md sm:gap-4 sm:p-3.5">
         <p className="t-num shrink-0 pl-1 text-[0.8125rem] font-medium">
           {selected.length} selected

@@ -20,7 +20,7 @@ export const buildMetadata = ({
   type?: 'website' | 'article';
 }): Metadata => {
   const url = abs(path);
-  const og = image ? abs(image) : abs('/og-default.png');
+  const og = image ? abs(image) : abs('/og-default.jpg');
   return {
     title,
     description,

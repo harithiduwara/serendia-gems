@@ -188,3 +188,48 @@ input[type='range'] { accent-color: var(--color-royal); }
 
 /* Sticky bars overlay the page bottom; keep the last content clear of them. */
 body { padding-bottom: env(safe-area-inset-bottom); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRINT — a stone page as a specification sheet
+   Trade buyers print or "Save as PDF" a stone to take to a client or a setter.
+   Browser default printing wastes a page on navigation and drops the photo, so
+   the page is reshaped rather than merely tolerated. See docs/03 §10.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.print-only { display: none; }
+
+@media print {
+  @page { margin: 14mm; }
+
+  /* Interactive furniture has no meaning on paper. */
+  header,
+  footer,
+  .no-print,
+  [role='dialog'],
+  [role='progressbar'] { display: none !important; }
+
+  .print-only { display: block; }
+
+  html, body { background: #fff; }
+
+  body {
+    font-size: 11pt;
+    /* Keep the stone's mat and the gold rules — the mat is what the colour is
+       judged against, so dropping it would misrepresent the stone. */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Links are dead on paper; the page prints its own address instead. */
+  a { text-decoration: none !important; color: inherit !important; }
+
+  /* The gallery column is sticky on screen, which confuses pagination. */
+  .lg\:sticky { position: static !important; }
+
+  /* Never split a stone's photograph or a specification row across pages. */
+  img, dl > div, tr, li { break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; }
+
+  /* Hairline borders print heavier than they render; lighten them. */
+  * { box-shadow: none !important; }
+}

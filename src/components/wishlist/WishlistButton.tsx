@@ -33,7 +33,7 @@ export function WishlistButton({
       aria-pressed={saved}
       aria-label={saved ? `Remove ${code} from your selection` : `Save ${code} to your selection`}
       className={
-        `inline-flex items-center justify-center gap-2 rounded-full border transition-colors duration-200 ` +
+        `no-print inline-flex items-center justify-center gap-2 rounded-full border transition-colors duration-200 ` +
         (withLabel ? 'px-4 min-h-12 text-sm font-medium ' : 'h-11 w-11 ') +
         (saved
           ? 'border-gold bg-gold/10 text-gold '

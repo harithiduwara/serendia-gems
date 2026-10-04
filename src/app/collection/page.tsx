@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { CollectionBrowser } from '@/components/collection/CollectionBrowser';
 import { GemCard } from '@/components/gem/GemCard';
+import { RecentlyViewed } from '@/components/gem/RecentlyViewed';
 import { Container } from '@/components/primitives';
 import { getAllGems } from '@/lib/catalog';
 import { breadcrumbJsonLd, buildMetadata } from '@/lib/seo';
@@ -56,6 +57,8 @@ export default function CollectionPage() {
             <CollectionBrowser gems={gems} />
           </Suspense>
         </div>
+
+        <RecentlyViewed gems={gems} />
       </Container>
     </>
   );

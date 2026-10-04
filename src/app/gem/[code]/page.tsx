@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { BackToResults } from '@/components/gem/BackToResults';
+import { RecordStoneView } from '@/components/gem/RecentlyViewed';
+import { ShareStone } from '@/components/gem/ShareStone';
 import { GemGallery } from '@/components/gem/GemGallery';
 import { StickyGemActions } from '@/components/gem/StickyGemActions';
 import { GemCard } from '@/components/gem/GemCard';
@@ -11,7 +13,7 @@ import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { getAllCodes, getGemByCode, getRelatedGems, imagePath } from '@/lib/catalog';
 import { formatCarats, formatLKR, formatTreatment, formatUSD } from '@/lib/format';
 import { breadcrumbJsonLd, buildMetadata, gemJsonLd } from '@/lib/seo';
-import { SITE } from '@/lib/site';
+import { absoluteUrl, SITE } from '@/lib/site';
 
 /** All 24 lots are pre-rendered at build time (FR-06). */
 export function generateStaticParams() {
@@ -47,6 +49,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
   if (!gem) notFound();
 
   const related = getRelatedGems(gem, 3);
+  const canonicalUrl = absoluteUrl(`/gem/${gem.code}`);
   const enquiryHref = `/contact?gem=${gem.code}`;
   const whatsappHref = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(
     `Hello Serendia Gems — I would like to know more about lot ${gem.code} (${formatCarats(gem.carats)} ${gem.variety}).`,
@@ -119,6 +122,9 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
               {formatCarats(gem.carats)} {gem.variety}
             </h1>
             <p className="t-lead mt-4 measure">{gem.caption}</p>
+            <p className="print-only t-num mt-3 text-[0.8125rem] text-[color:var(--muted-fg)]">
+              {canonicalUrl}
+            </p>
 
             {/* Price */}
             <div className="mt-8 border-y border-[color:var(--panel-line)] py-6">
@@ -154,6 +160,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
                       Email us
                     </ButtonLink>
                   </div>
+                  <ShareStone gem={gem} url={canonicalUrl} />
                   <StickyGemActions gem={gem} />
                   <p className="mt-4 text-[0.8125rem] leading-relaxed text-[color:var(--subtle-fg)]">
                     No payment is taken online. We reply with any further images, video and
@@ -256,6 +263,7 @@ export default async function GemPage({ params }: { params: Promise<{ code: stri
             </div>
           </div>
         ) : null}
+        <RecordStoneView code={gem.code} />
       </Container>
     </>
   );

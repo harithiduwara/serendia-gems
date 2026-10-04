@@ -64,7 +64,7 @@ export const absoluteUrl = (path: string): string => {
   if (path === '' || path === '/') return `${base}/`;
 
   const clean = `/${path.replace(/^\/+/, '').replace(/\/+$/, '')}`;
-  // Files (og-default.png, a gem JPEG) never take a trailing slash.
+  // Files (og-default.jpg, a gem JPEG) never take a trailing slash.
   const isFile = /\.[a-z0-9]{2,5}$/i.test(clean);
 
   return `${base}${clean}${TRAILING_SLASH && !isFile ? '/' : ''}`;

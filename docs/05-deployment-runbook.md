@@ -16,10 +16,10 @@ Version 1.0 · 2026-09-08
 | ~~B-02~~ | ~~Point `NEXT_PUBLIC_SITE_URL` at the real origin~~ | `scripts/build-cloudflare.mjs` | **Done 2026-09-17** — the Cloudflare build forces `https://serendiagems.com` and fails if the sitemap names any other origin. |
 | B-03 | Confirm the return window and shipping terms are the merchant's actual policy | `src/app/terms/page.tsx` | The site currently promises a seven-day return. If that is not the policy, it is a false statement of terms. |
 | B-04 | *Node host only:* wire enquiry delivery | `src/app/api/enquiry/route.ts` §6 | Does not apply on Cloudflare, where the form composes an email instead (see B-01b). Applies only if the full server build is deployed. |
-| B-05 | Add `/public/og-default.png` (1200×630) | `public/` | Social shares of the home page currently reference a missing image. |
+| ~~B-05~~ | ~~Add a default social-share image~~ | `public/og-default.jpg` | **Done 2026-10-04** — 1200×630 brand card, 123 KB (kept under the ~300 KB above which WhatsApp commonly drops previews). Regenerate with `python3 scripts/generate-brand-assets.py`. |
 | B-06 | Verify prices are current | `src/data/inventory.ts` | Transcribed from the January 2026 sheet. |
 
-Recommended but not blocking: a favicon set, and replacing the founding year in `SITE.founded` if 1998 is not accurate.
+~~Recommended: a favicon set~~ — **done 2026-10-04** (`src/app/icon.svg`, `src/app/apple-icon.png`). Still recommended but not blocking: replace the founding year in `SITE.founded` if 1998 is not accurate.
 
 ## 2. Environment variables
 
