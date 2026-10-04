@@ -312,3 +312,31 @@ stone page: 10 elements drop out (header, footer, all controls) while the
 heading, price, specification table, photograph and printed address survive. The
 actual printed output has not been inspected — worth one Cmd-P before relying on
 it for a client.
+
+## 11. The article section
+
+Eight articles live under `/guide`, indexed at `/guide` with six quick tips in
+front of them. Four were added 2026-10-04: reading colour, inclusions and
+clarity, cut and shape, matched pairs.
+
+**Every article is illustrated with a stone in the collection**, never stock
+photography, and each figure links to the lot it shows (`ArticleFigure`,
+`ArticleCompare`). This is a constraint, not a flourish: a claim about
+saturation has to be true of a stone that is on sale one click away, and a
+reader learning what to look for can go straight to the example. It also means
+the library updates itself as the catalogue does — a sold stone's article
+figure still teaches, and still leads somewhere useful.
+
+Article metadata (image, alt text, reading time, blurb) lives in `GUIDE_PAGES`
+in `src/lib/site.ts`, which drives the index, the footer column, the "keep
+reading" rail and the sitemap. Adding an article is a page file plus an entry
+there.
+
+**Typography defect fixed in the process.** Article body styles were written as
+Tailwind arbitrary variants referencing the custom type classes
+(`[&>h2]:t-display-3`). Tailwind can only generate real utilities that way, so
+none of it applied; combined with Preflight resetting heading sizes to inherit,
+every heading in every article rendered at 16 px against 17 px body text — i.e.
+smaller than the paragraphs around it, since the first four articles shipped.
+Now plain CSS in `.article-prose` (globals.css): headings measure 33.6 px
+against 17 px body.

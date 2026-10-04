@@ -51,7 +51,13 @@ export function SiteFooter() {
           </div>
 
           <FooterColumn title="The Collection" links={SHOP_LINKS} />
-          <FooterColumn title="Learn" links={GUIDE_PAGES.map((g) => ({ href: g.href, label: g.label }))} />
+          <FooterColumn
+            title="Learn"
+            links={[
+              ...GUIDE_PAGES.slice(0, 5).map((g) => ({ href: g.href, label: g.label })),
+              { href: '/guide', label: 'All articles →' },
+            ]}
+          />
           <FooterColumn title="The House" links={HOUSE_LINKS} />
         </div>
 

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
+import { blurFor, imagePath } from '@/lib/catalog';
 import { Container } from '@/components/primitives';
 import { GUIDE_PAGES } from '@/lib/site';
 
@@ -31,19 +33,7 @@ export function ArticleHeader({
  */
 export function Prose({ children }: { children: ReactNode }) {
   return (
-    <div
-      className="
-        py-14 sm:py-20
-        [&>h2]:t-display-3 [&>h2]:mt-14 [&>h2]:mb-4 [&>h2]:first:mt-0
-        [&>h3]:t-title [&>h3]:mt-9 [&>h3]:mb-3
-        [&>p]:mb-5 [&>p]:text-[1.0625rem] [&>p]:leading-[1.78] [&>p]:text-[color:var(--muted-fg)]
-        [&>ul]:mb-6 [&>ul]:space-y-2.5 [&>ul]:pl-5 [&>ul]:list-disc [&>ul]:marker:text-gold
-        [&>ol]:mb-6 [&>ol]:space-y-2.5 [&>ol]:pl-5 [&>ol]:list-decimal [&>ol]:marker:text-gold
-        [&_li]:text-[1.0625rem] [&_li]:leading-[1.72] [&_li]:text-[color:var(--muted-fg)]
-        [&_strong]:font-semibold [&_strong]:text-[color:var(--page-fg)]
-        [&_a]:text-royal [&_a]:underline [&_a]:underline-offset-[0.22em]
-      "
-    >
+    <div className="article-prose py-14 sm:py-20">
       {children}
     </div>
   );
@@ -59,7 +49,9 @@ export function KeyTakeaway({ children }: { children: ReactNode }) {
 }
 
 export function GuideFooter({ current }: { current: string }) {
-  const others = GUIDE_PAGES.filter((g) => g.href !== current);
+  // Three, not all of them: a wall of eight at the end of an article is a
+  // choice nobody makes. The index page is for browsing the rest.
+  const others = GUIDE_PAGES.filter((g) => g.href !== current).slice(0, 3);
   return (
     <div className="border-t border-[color:var(--panel-line)] py-12">
       <p className="t-eyebrow mb-6 text-[color:var(--subtle-fg)]">Keep reading</p>
@@ -76,6 +68,100 @@ export function GuideFooter({ current }: { current: string }) {
           </li>
         ))}
       </ul>
+      <p className="mt-6 text-sm">
+        <Link href="/guide" className="link-underline font-medium text-royal">
+          All articles →
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+/**
+ * A photograph inside an article, captioned and credited to the lot it shows.
+ *
+ * Every example is a stone actually in the collection rather than stock
+ * photography, so the caption links to it: a reader learning what saturation
+ * looks like can click straight through to the stone demonstrating it. It also
+ * keeps the teaching honest — the claim in the text has to be true of a stone
+ * that is on sale a click away.
+ */
+export function ArticleFigure({
+  image,
+  alt,
+  code,
+  children,
+}: {
+  image: string;
+  alt: string;
+  /** Lot code shown, when it is one of ours. */
+  code?: string;
+  children: ReactNode;
+}) {
+  return (
+    <figure className="my-9">
+      <div className="gem-mat relative aspect-[4/3] overflow-hidden rounded-[var(--r-md)] border border-[color:var(--panel-line)]">
+        <Image
+          src={imagePath(image)}
+          alt={alt}
+          fill
+          sizes="(max-width: 768px) 100vw, 46rem"
+          placeholder="blur"
+          blurDataURL={blurFor(image)}
+          className="object-cover"
+        />
+      </div>
+      <figcaption className="mt-3 text-[0.8125rem] leading-relaxed text-[color:var(--muted-fg)]">
+        {children}
+        {code ? (
+          <>
+            {' '}
+            <Link href={`/gem/${code}`} className="link-underline font-medium text-royal">
+              See {code}
+            </Link>
+          </>
+        ) : null}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** Two photographs side by side, for comparisons the text asks the reader to make. */
+export function ArticleCompare({
+  left,
+  right,
+}: {
+  left: { image: string; alt: string; code?: string; caption: ReactNode };
+  right: { image: string; alt: string; code?: string; caption: ReactNode };
+}) {
+  return (
+    <div className="my-9 grid gap-5 sm:grid-cols-2">
+      {[left, right].map((side) => (
+        <figure key={side.image}>
+          <div className="gem-mat relative aspect-square overflow-hidden rounded-[var(--r-md)] border border-[color:var(--panel-line)]">
+            <Image
+              src={imagePath(side.image)}
+              alt={side.alt}
+              fill
+              sizes="(max-width: 640px) 100vw, 22rem"
+              placeholder="blur"
+              blurDataURL={blurFor(side.image)}
+              className="object-cover"
+            />
+          </div>
+          <figcaption className="mt-3 text-[0.8125rem] leading-relaxed text-[color:var(--muted-fg)]">
+            {side.caption}
+            {side.code ? (
+              <>
+                {' '}
+                <Link href={`/gem/${side.code}`} className="link-underline font-medium text-royal">
+                  See {side.code}
+                </Link>
+              </>
+            ) : null}
+          </figcaption>
+        </figure>
+      ))}
     </div>
   );
 }

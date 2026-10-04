@@ -228,3 +228,23 @@ Design rationale is in `docs/03-design-system.md` §9.9–§10.
 The **printed output** itself. The print rules are verified structurally (which
 elements survive, which drop out), but no physical or PDF print was inspected.
 One Cmd-P on a stone page before relying on it for a client.
+
+---
+
+## 11. Article section (2026-10-04)
+
+| # | Item | Verified |
+|---|---|---|
+| A-01 | Index at `/guide` with six quick tips, a lead article and the full library | Renders; 9 guide routes build statically |
+| A-02 | Four new articles: reading colour, inclusions, cut and shape, matched pairs | Smoke covers each route and its heading |
+| A-03 | Figures illustrated with real lots, each linking to the stone | `/guide/reading-colour` renders 5 figures linking HR15, HR16, HR19, HR26, HR20 |
+| A-04 | Sitemap lists the index and all 8 articles | 9 `/guide` URLs in `sitemap.xml` |
+| A-05 | Nav and footer updated (footer caps at 5 + "All articles") | Visual |
+
+### 11.1 Defect found
+
+| ID | Severity | Defect | Fix |
+|---|---|---|---|
+| D-11 | Medium | **Every article heading was smaller than its body text** (16 px vs 17 px), and had been since the first four articles shipped. The body styles were Tailwind arbitrary variants pointing at custom classes (`[&>h2]:t-display-3`), which Tailwind cannot generate, and Preflight resets heading sizes to inherit. | Rewrote as `.article-prose` CSS in `globals.css`. Verified: h2 33.6 px vs 17 px body, on an article that was already live. |
+
+Suites after the change: 89 unit, 76 full-mode smoke, 61 static-mode smoke.
