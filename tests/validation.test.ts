@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { enquirySchema } from '@/lib/validation';
+import { enquirySchema, staticEnquirySchema } from '@/lib/validation';
 import { __resetRateLimits, rateLimit } from '@/lib/rate-limit';
 
 const valid = {
@@ -75,5 +75,29 @@ describe('rate limit', () => {
   it('reports remaining allowance', () => {
     expect(rateLimit('ip-e').remaining).toBe(4);
     expect(rateLimit('ip-e').remaining).toBe(3);
+  });
+});
+
+describe('static enquiry schema (WhatsApp / mail-client hand-off)', () => {
+  const base = { name: 'Ayesha Perera', message: 'Could you send more images of HR16?', gemCodes: [] };
+
+  it('accepts an enquiry with no email address', () => {
+    // The reply path is the WhatsApp number or the sender's own mail client.
+    expect(staticEnquirySchema.safeParse({ ...base, email: '' }).success).toBe(true);
+    expect(staticEnquirySchema.safeParse(base).success).toBe(true);
+  });
+
+  it('still rejects a malformed email when one is given', () => {
+    expect(staticEnquirySchema.safeParse({ ...base, email: 'not-an-email' }).success).toBe(false);
+  });
+
+  it('keeps every other rule', () => {
+    expect(staticEnquirySchema.safeParse({ ...base, name: 'A' }).success).toBe(false);
+    expect(staticEnquirySchema.safeParse({ ...base, message: 'hi' }).success).toBe(false);
+  });
+
+  it('leaves the server schema requiring an email', () => {
+    // A POSTed enquiry has no sender identity of its own.
+    expect(enquirySchema.safeParse({ ...base, email: '' }).success).toBe(false);
   });
 });

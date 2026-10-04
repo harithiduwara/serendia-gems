@@ -1,33 +1,53 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Field, inputClass } from '@/components/primitives';
 import { useWishlist } from '@/components/wishlist/WishlistProvider';
 import { SITE } from '@/lib/site';
-import { enquirySchema, type EnquiryResponse } from '@/lib/validation';
+import { enquirySchema, staticEnquirySchema, type EnquiryResponse } from '@/lib/validation';
 
 /**
- * The static export (GitHub Pages) has no server, so there is no /api/enquiry to
- * POST to. Rather than let the form fail silently — the worst possible outcome
- * for the one conversion path on the site — it validates with the same schema
- * and hands off to the visitor's mail client with everything pre-filled.
+ * The static export has no server, so there is no /api/enquiry to POST to.
+ * Instead the form validates locally and hands the enquiry to a channel that
+ * does have a delivery path.
+ *
+ * WhatsApp is the primary one. It goes to a number that demonstrably works,
+ * it is how this market actually talks to a seller, and the reply arrives
+ * where the buyer already is. Email is kept as the alternative, because not
+ * everyone uses WhatsApp — but it is second, not first.
  */
 const IS_STATIC = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
 
+/** WhatsApp carries the enquiry in a URL, and very long URLs fail to open. */
+const WHATSAPP_TEXT_MAX = 1500;
+
 type Status = 'idle' | 'sending' | 'sent' | 'error';
+type Channel = 'whatsapp' | 'email';
 
 export function EnquiryForm() {
   const searchParams = useSearchParams();
   const { codes, ready } = useWishlist();
 
   const [status, setStatus] = useState<Status>('idle');
+  const [sentVia, setSentVia] = useState<Channel>('whatsapp');
+
+  /**
+   * Fallback for which channel was meant. The submit event's `submitter` is the
+   * authority (see onSubmit) because it is set by the browser however the form
+   * was submitted — mouse, keyboard, or programmatically. This ref only covers
+   * the case where a browser reports no submitter at all.
+   */
+  const channelRef = useRef<Channel>('whatsapp');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
   const [message, setMessage] = useState('');
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const MESSAGE_MAX = 4000;
+
+  // Static builds do not need a typed email address — see lib/validation.ts.
+  const activeSchema = IS_STATIC ? staticEnquirySchema : enquirySchema;
 
   /**
    * Nielsen #5, error prevention: catch a mistyped email at the moment the
@@ -37,7 +57,7 @@ export function EnquiryForm() {
    */
   const validateField = (name: string, value: string) => {
     if (!touched[name]) return;
-    const single = enquirySchema.shape[name as 'name' | 'email' | 'message'];
+    const single = activeSchema.shape[name as 'name' | 'email' | 'message'];
     if (!single) return;
     const result = single.safeParse(value);
     setErrors((prev) => {
@@ -52,7 +72,7 @@ export function EnquiryForm() {
     const { name, value } = e.target;
     setTouched((t) => ({ ...t, [name]: true }));
     // Read through the updated flag directly; state has not committed yet.
-    const single = enquirySchema.shape[name as 'name' | 'email' | 'message'];
+    const single = activeSchema.shape[name as 'name' | 'email' | 'message'];
     if (!single) return;
     const result = single.safeParse(value);
     setErrors((prev) => {
@@ -74,8 +94,51 @@ export function EnquiryForm() {
     }
   }, [gemParam, message]);
 
+  /** Builds the enquiry body shared by both channels. */
+  const composeLines = (payload: Record<string, string | string[]>): string[] =>
+    [
+      `Name: ${payload.name}`,
+      payload.email ? `Email: ${payload.email}` : null,
+      payload.phone ? `Phone: ${payload.phone}` : null,
+      payload.country ? `Country: ${payload.country}` : null,
+      subjectCodes.length ? `Lots: ${subjectCodes.join(', ')}` : null,
+      '',
+      String(payload.message),
+    ].filter((l): l is string => l !== null);
+
+  const handOff = (channel: Channel, payload: Record<string, string | string[]>) => {
+    const lines = composeLines(payload);
+    const subject = subjectCodes.length
+      ? `Enquiry — lot ${subjectCodes.join(', ')}`
+      : 'Enquiry from serendiagems.com';
+
+    if (channel === 'email') {
+      window.location.href =
+        `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(lines.join('\n'))}`;
+      return;
+    }
+
+    let text = [subject, '', ...lines].join('\n');
+    if (text.length > WHATSAPP_TEXT_MAX) {
+      // Trim the free-text tail rather than the details above it, and say so,
+      // so nothing is lost silently.
+      text = `${text.slice(0, WHATSAPP_TEXT_MAX - 40).trimEnd()}…\n(message continues — I will send the rest)`;
+    }
+    // A new tab, so the stone they were reading is still there behind it.
+    window.open(`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Which button submitted the form. Reading the submitter rather than a
+    // click handler keeps this correct for keyboard submits too.
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const channel: Channel =
+      submitter?.value === 'email' || submitter?.value === 'whatsapp'
+        ? (submitter.value as Channel)
+        : channelRef.current;
     setStatus('sending');
     setErrors({});
     setFormError('');
@@ -91,9 +154,9 @@ export function EnquiryForm() {
       gemCodes: subjectCodes,
     };
 
-    // Static build: validate locally, then hand off to the mail client.
+    // Static build: validate locally, then hand the enquiry to a real channel.
     if (IS_STATIC) {
-      const parsed = enquirySchema.safeParse(payload);
+      const parsed = activeSchema.safeParse(payload);
       if (!parsed.success) {
         const fieldErrors: Record<string, string> = {};
         for (const issue of parsed.error.issues) {
@@ -106,23 +169,8 @@ export function EnquiryForm() {
         return;
       }
 
-      const lines = [
-        `Name: ${payload.name}`,
-        `Email: ${payload.email}`,
-        payload.phone ? `Phone: ${payload.phone}` : null,
-        payload.country ? `Country: ${payload.country}` : null,
-        subjectCodes.length ? `Lots: ${subjectCodes.join(', ')}` : null,
-        '',
-        payload.message,
-      ].filter((l): l is string => l !== null);
-
-      const subject = subjectCodes.length
-        ? `Enquiry — lot ${subjectCodes.join(', ')}`
-        : 'Enquiry from serendiagems.com';
-
-      window.location.href =
-        `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}` +
-        `&body=${encodeURIComponent(lines.join('\n'))}`;
+      handOff(channel, payload);
+      setSentVia(channel);
       setStatus('sent');
       return;
     }
@@ -158,22 +206,33 @@ export function EnquiryForm() {
           <circle cx="12" cy="12" r="10" /><path d="m8.5 12.5 2.5 2.5 4.5-5" />
         </svg>
         <h2 className="t-title mb-2">
-          {IS_STATIC ? 'Your email is ready to send' : 'Your enquiry is with us'}
+          {!IS_STATIC
+            ? 'Your enquiry is with us'
+            : sentVia === 'whatsapp'
+              ? 'WhatsApp is open with your enquiry'
+              : 'Your email is ready to send'}
         </h2>
         <p className="measure mx-auto text-[0.9375rem] leading-relaxed text-[color:var(--muted-fg)]">
-          {IS_STATIC
-            ? 'We have opened your mail application with the details filled in. Press send there and it reaches us — we reply personally, usually within one working day.'
-            : 'We reply to every enquiry personally, usually within one working day. If you asked about a specific lot we will send further images and video with the reply.'}
+          {!IS_STATIC
+            ? 'We reply to every enquiry personally, usually within one working day. If you asked about a specific lot we will send further images and video with the reply.'
+            : sentVia === 'whatsapp'
+              ? 'Your enquiry is written out in WhatsApp — press send there and it reaches us. We reply personally, usually within one working day.'
+              : 'We have opened your mail application with the details filled in. Press send there and it reaches us — we reply personally, usually within one working day.'}
         </p>
         {IS_STATIC ? (
           <p className="mt-4 text-[0.8125rem] text-[color:var(--subtle-fg)]">
-            Nothing happened? Write to{' '}
+            Nothing happened?{' '}
+            <a
+              href={`https://wa.me/${SITE.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-underline font-medium"
+            >
+              Open WhatsApp directly
+            </a>{' '}
+            on {SITE.phoneDisplay}, or write to{' '}
             <a href={`mailto:${SITE.email}`} className="link-underline font-medium">
               {SITE.email}
-            </a>{' '}
-            or message us on{' '}
-            <a href={`https://wa.me/${SITE.whatsapp}`} rel="noopener noreferrer" className="link-underline font-medium">
-              WhatsApp
             </a>
             .
           </p>
@@ -183,7 +242,7 @@ export function EnquiryForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-5">
+    <form onSubmit={(e) => void onSubmit(e)} noValidate className="space-y-5">
       {subjectCodes.length > 0 ? (
         <div className="rounded-[var(--r-md)] border border-royal/20 bg-mist/50 p-4">
           <p className="text-[0.8125rem] font-medium">
@@ -206,9 +265,15 @@ export function EnquiryForm() {
             aria-describedby={errors.name ? 'name-error' : undefined}
           />
         </Field>
-        <Field label="Email" htmlFor="email" required error={errors.email}>
+        <Field
+          label="Email"
+          htmlFor="email"
+          required={!IS_STATIC}
+          hint={IS_STATIC ? 'Optional — we can reply on WhatsApp.' : undefined}
+          error={errors.email}
+        >
           <input
-            id="email" name="email" type="email" required autoComplete="email"
+            id="email" name="email" type="email" required={!IS_STATIC} autoComplete="email"
             onBlur={onBlur}
             onChange={(e) => validateField('email', e.target.value)}
             className={inputClass}
@@ -267,12 +332,38 @@ export function EnquiryForm() {
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-4 pt-1">
-        <Button type="submit" size="lg" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending…' : IS_STATIC ? 'Compose enquiry email' : 'Send enquiry'}
-        </Button>
+      <div className="space-y-3 pt-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={status === 'sending'}
+            name="channel"
+            value="whatsapp"
+            onClick={() => { channelRef.current = 'whatsapp'; }}
+          >
+            {status === 'sending' ? 'Sending…' : IS_STATIC ? 'Send on WhatsApp' : 'Send enquiry'}
+          </Button>
+
+          {IS_STATIC ? (
+            <Button
+              type="submit"
+              variant="secondary"
+              size="lg"
+              disabled={status === 'sending'}
+              name="channel"
+              value="email"
+              onClick={() => { channelRef.current = 'email'; }}
+            >
+              Send as email instead
+            </Button>
+          ) : null}
+        </div>
+
         <p className="text-xs text-[color:var(--subtle-fg)]">
-          We use your details only to answer this enquiry. No mailing list, no third parties.
+          {IS_STATIC
+            ? 'WhatsApp opens with your enquiry written out — check it and press send there. We use your details only to answer it. No mailing list, no third parties.'
+            : 'We use your details only to answer this enquiry. No mailing list, no third parties.'}
         </p>
       </div>
     </form>

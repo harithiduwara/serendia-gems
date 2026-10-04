@@ -28,6 +28,29 @@ export const enquirySchema = z.object({
   company: z.string().max(200).optional(),
 });
 
+/**
+ * Schema for the static build, where the form hands off to WhatsApp or to the
+ * visitor's own mail client.
+ *
+ * Email is optional here, and that is not a relaxation of standards — it is a
+ * consequence of how the message travels. A WhatsApp enquiry arrives from the
+ * sender's number; a mailto enquiry arrives from their address. Either way we
+ * already have a way to reply, so demanding a typed email address as well is
+ * friction that buys nothing. If one IS typed it still has to be valid.
+ *
+ * The server schema above is deliberately unchanged: a POSTed enquiry carries
+ * no sender identity of its own, so there an address is the only way back.
+ */
+export const staticEnquirySchema = enquirySchema.extend({
+  email: z
+    .string()
+    .trim()
+    .email('Please enter a valid email address.')
+    .max(200)
+    .optional()
+    .or(z.literal('')),
+});
+
 export type EnquiryInput = z.infer<typeof enquirySchema>;
 
 export interface EnquiryResponse {
